@@ -1,0 +1,38 @@
+# 忽略不需要的文件
+node_modules
+npm-debug.log
+.git
+.gitignore
+README.md
+DISCLAIMER.md
+LICENSE
+*.md
+*.txt
+*.bat
+
+# 忽略下载目录（通过volume挂载）
+Downloads
+downloads
+
+# 忽略浏览器数据目录（通过volume挂载）
+browser-data
+
+# 忽略配置文件（通过volume挂载）
+config.json
+
+# 忽略前端文件（Docker容器中不需要）
+index.html
+preload.js
+plugin.json
+logo.png
+
+# 忽略IDE文件
+.vscode
+.idea
+*.swp
+*.swo
+
+# 忽略系统文件
+.DS_Store
+Thumbs.db
+

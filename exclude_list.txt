@@ -1,0 +1,7 @@
+团队素材下载工具V1.0.0\
+.git\
+node_modules\
+团队素材下载工具V1.0.0\
+copy_to_release.bat
+exclude_list.txt
+

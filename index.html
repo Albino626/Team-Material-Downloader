@@ -1,0 +1,3884 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>团队素材下载工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* CSS 变量定义 */
+        :root {
+            --bg-primary: #f5f5f7;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f5f5f7;
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --text-tertiary: #86868b;
+            --border-color: #d2d2d7;
+            --shadow-color: rgba(0, 0, 0, 0.06);
+            --hover-bg: rgba(0, 0, 0, 0.04);
+        }
+        
+        /* 暗黑模式变量 */
+        body.dark-mode {
+            --bg-primary: #000000;
+            --bg-secondary: #1d1d1f;
+            --bg-tertiary: #2c2c2e;
+            --text-primary: #f5f5f7;
+            --text-secondary: #a8a8ad;
+            --text-tertiary: #98989d;
+            --border-color: #38383a;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --hover-bg: rgba(255, 255, 255, 0.08);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            font-weight: 400;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+        
+        .container {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            box-shadow: 
+                0 4px 24px var(--shadow-color),
+                0 1px 3px rgba(0, 0, 0, 0.03);
+            max-width: 650px;
+            width: 100%;
+            padding: 30px;
+            transition: background-color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1), box-shadow 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        /* 暗黑模式切换滑块 */
+        .theme-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 45px;
+            height: 27px;
+            background: var(--border-color);
+            border-radius: 27px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            padding: 0;
+            outline: none;
+        }
+        
+        .theme-toggle:hover {
+            background: var(--text-tertiary);
+        }
+        
+        .theme-toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 23px;
+            height: 23px;
+            background: #ffffff;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            filter: grayscale(100%) brightness(2);
+        }
+        
+        body.dark-mode .theme-toggle {
+            background: #e5e5e7;
+        }
+        
+        body.dark-mode .theme-toggle:hover {
+            background: #d1d1d6;
+        }
+        
+        body.dark-mode .theme-toggle-slider {
+            transform: translateX(18px);
+            background: #ffffff;
+            filter: grayscale(100%) brightness(0.3);
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 1.4;
+            letter-spacing: 0.01em;
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .status {
+            background: var(--bg-tertiary);
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            border: none;
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            color: var(--text-primary);
+        }
+        
+        .status:hover {
+            background: var(--hover-bg);
+        }
+        
+        body.dark-mode .status:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .status-left-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* 管理员密码验证层 */
+        .admin-auth-layer {
+            text-align: center;
+            padding: 50px 30px;
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .admin-auth-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .admin-auth-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 32px;
+            line-height: 1.6;
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .admin-auth-input {
+            max-width: 320px;
+            margin: 0 auto 24px;
+            position: relative;
+        }
+        
+        .admin-auth-input input {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            text-align: center;
+            letter-spacing: 3px;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        
+        .admin-auth-input input::placeholder {
+            color: var(--text-tertiary);
+            letter-spacing: normal;
+            font-weight: 400;
+        }
+        
+        .admin-auth-input input:hover {
+            border-color: #6366f1;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .admin-auth-input input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), 0 4px 16px rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        body.dark-mode .admin-auth-input input:focus {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25), 0 4px 16px rgba(99, 102, 241, 0.3);
+        }
+        
+        .admin-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .admin-content.unlocked {
+            display: block;
+        }
+        
+        .admin-header {
+            background: var(--bg-tertiary);
+            padding: 24px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+        
+        .admin-header h2 {
+            margin: 0 0 8px 0;
+            color: var(--text-primary);
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: -0.015em;
+        }
+        
+        .admin-header p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* 站点登录卡片美化 */
+        .site-login-card {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .site-login-card:hover {
+            box-shadow: 0 2px 8px var(--shadow-color);
+        }
+        
+        .site-login-title {
+            margin: 0 0 18px 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+        
+        /* 表单输入框美化 */
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .form-input:hover {
+            border-color: #6366f1;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 4px 12px rgba(99, 102, 241, 0.15);
+        }
+        
+        /* 信息提示框美化 */
+        .info-box {
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            background: var(--bg-tertiary);
+            transition: all 0.3s ease;
+        }
+        
+        .info-box strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* 状态标签美化 */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        .status-badge.success {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        
+        .status-badge.info {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+        
+        /* 使用说明折叠样式 */
+        details {
+            margin-top: 16px;
+        }
+        
+        details summary {
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 13px;
+            padding: 8px 0;
+            user-select: none;
+            transition: all 0.2s ease;
+            list-style: none;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        details summary::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            transition: transform 0.2s ease;
+            font-size: 10px;
+            color: var(--text-tertiary);
+        }
+        
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+        
+        details summary:hover {
+            color: var(--text-primary);
+        }
+        
+        details .info-box {
+            margin-top: 12px;
+            background: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        body.dark-mode details .info-box {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ef4444;
+            margin-right: 10px;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .status-dot.connected {
+            background: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+            color: #475569;
+        }
+        
+        /* 刷新按钮 */
+        .refresh-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+        }
+        
+        .refresh-btn:hover {
+            opacity: 1;
+            background: rgba(99, 102, 241, 0.1);
+            transform: rotate(180deg);
+        }
+        
+        .refresh-btn:active {
+            transform: rotate(180deg) scale(0.9);
+        }
+        
+        .refresh-btn.refreshing {
+            animation: spin 1s linear infinite;
+            opacity: 1;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .tab-buttons {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            background: var(--bg-tertiary);
+            padding: 5px;
+            border-radius: 14px;
+            transition: background-color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            position: relative;
+        }
+        
+        .tab-btn:hover:not(.active) {
+            color: var(--text-primary);
+        }
+        
+        .tab-btn.active {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            box-shadow: 
+                0 3px 8px var(--shadow-color),
+                0 1px 1px rgba(0, 0, 0, 0.05);
+        }
+        
+        body.dark-mode .tab-btn.active {
+            box-shadow: 
+                0 3px 8px rgba(0, 0, 0, 0.5),
+                0 1px 1px rgba(0, 0, 0, 0.3);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .input-group {
+            margin-bottom: 22px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .input-group input::placeholder,
+        .input-group textarea::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        .input-group input:hover,
+        .input-group textarea:hover {
+            border-color: var(--text-tertiary);
+        }
+        
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #0071e3;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        }
+        
+        body.dark-mode .input-group input:focus,
+        body.dark-mode .input-group textarea:focus {
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.2);
+        }
+        
+        .input-group textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+        
+        .input-hint {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary {
+            background: #0071e3;
+            color: white;
+            border: none;
+            font-weight: 400;
+        }
+        
+        .btn-primary:hover {
+            background: #0077ed;
+            transform: translateY(-1px);
+        }
+        
+        .btn-primary:active {
+            background: #006edb;
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: #30d158;
+            color: white;
+            border: none;
+        }
+        
+        .btn-success:hover {
+            background: #32d65a;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: none;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+        
+        body.dark-mode .btn-secondary {
+            background: var(--bg-tertiary);
+        }
+        
+        body.dark-mode .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        .btn-danger {
+            background: #ff3b30;
+            color: white;
+            border: none;
+        }
+        
+        .btn-danger:hover {
+            background: #ff453a;
+            transform: translateY(-1px);
+        }
+        
+        .btn:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #dbeafe, #eff6ff);
+            border-left: 4px solid #6366f1;
+            padding: 18px 20px;
+            margin: 22px 0;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.8;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.1);
+            color: #475569;
+        }
+        
+        .info-box strong {
+            color: #334155;
+            font-weight: 600;
+        }
+        
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result.show {
+            display: block;
+        }
+        
+        .result h3 {
+            font-size: 17px;
+            margin-bottom: 16px;
+            color: #334155;
+            font-weight: 700;
+        }
+        
+        .download-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .download-item {
+            padding: 16px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        }
+        
+        .download-item:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateX(4px);
+        }
+        
+        .download-item a {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .download-item a:hover {
+            text-decoration: underline;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+        
+        .loading.show {
+            display: block;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading div {
+            color: #64748b;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        /* 配额容器 - 四个并排 */
+        .quota-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+        
+        /* 单个网站配额卡片 - Apple紧凑风格 */
+        .quota-card {
+            position: relative;
+            background: var(--bg-tertiary);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            transition: all 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+            min-height: auto;
+        }
+        
+        .quota-card:hover {
+            background: var(--hover-bg);
+            transform: scale(1.02);
+        }
+        
+        body.dark-mode .quota-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        
+        /* 不同站点的配额卡片颜色标识 - 顶部装饰 */
+        .quota-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .quota-card.huaban::before {
+            background: #ef4444;
+        }
+        
+        .quota-card.yuansu::before {
+            background: #8b5cf6;
+        }
+        
+        .quota-card.ninetysheji::before {
+            background: #f97316;
+        }
+        
+        .quota-card.design006::before {
+            background: #eab308;
+        }
+        
+        /* 卡片头部 */
+        .quota-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .quota-card-title {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-primary);
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .quota-card-icon {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        /* 90设计图标特殊样式 */
+        .quota-card.ninetysheji .quota-card-icon {
+            color: #f97316;
+            font-weight: 700;
+        }
+        
+        /* 花瓣网图标特殊样式 */
+        .quota-card.huaban .quota-card-icon {
+            color: #dc2626;
+            font-weight: 700;
+        }
+        
+        /* 觅元素图标特殊样式 */
+        .quota-card.yuansu .quota-card-icon {
+            color: #7c3aed;
+            font-weight: 700;
+        }
+        
+        /* 享设计图标特殊样式 */
+        .quota-card.design006 .quota-card-icon {
+            color: #ea580c;
+        }
+        
+        /* 配额数值显示 - Apple简洁风格 */
+        .quota-value {
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            margin: 6px 0;
+            color: var(--text-primary);
+            letter-spacing: -0.015em;
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        .quota-value-small {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--text-tertiary);
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        /* 未登录状态显示 */
+        .quota-not-logged-in {
+            font-size: 11px;
+            font-weight: 400;
+            text-align: center;
+            color: var(--text-tertiary);
+            transition: color 0.3s cubic-bezier(0.28, 0.11, 0.32, 1);
+        }
+        
+        /* 进度条 - Apple简洁风格 */
+        .quota-progress {
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 3px;
+            height: 3px;
+            overflow: hidden;
+            margin-top: 6px;
+            position: relative;
+        }
+        
+        .quota-progress-bar {
+            height: 100%;
+            transition: width 0.6s cubic-bezier(0.28, 0.11, 0.32, 1);
+            border-radius: 3px;
+            position: relative;
+        }
+        
+        .quota-card.huaban .quota-progress-bar {
+            background: #ef4444;
+        }
+        
+        .quota-card.yuansu .quota-progress-bar {
+            background: #8b5cf6;
+        }
+        
+        .quota-card.ninetysheji .quota-progress-bar {
+            background: #f97316;
+        }
+        
+        .quota-card.design006 .quota-progress-bar {
+            background: #eab308;
+        }
+        
+        /* 状态标签 - Apple简洁风格 */
+        .quota-status {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        
+        .quota-status.unlimited {
+            background: rgba(0, 0, 0, 0.05);
+            color: #1d1d1f;
+        }
+        
+        .quota-status.limited {
+            background: rgba(0, 0, 0, 0.05);
+            color: #86868b;
+        }
+        
+        /* 不同站点的状态颜色 */
+        .quota-status.huaban-logged {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+        }
+        
+        .quota-status.design006-logged {
+            background: linear-gradient(135deg, #ca8a04, #eab308);
+            color: white;
+        }
+        
+        .quota-status.yuansu-logged {
+            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+            color: white;
+        }
+        
+        .quota-status.ninetyshejie-logged {
+            background: linear-gradient(135deg, #ea580c, #f97316);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="theme-toggle" onclick="toggleDarkMode()" id="themeToggle" title="切换暗黑模式">
+                <span class="theme-toggle-slider" id="themeSlider">☀️</span>
+            </button>
+            <h1>团队素材下载工具</h1>
+        </div>
+        
+        <div class="status">
+            <div class="status-left-group">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">未连接</span>
+                <span id="serverUrlDisplay" style="margin-left: 12px; color: var(--text-secondary); font-size: 12px; opacity: 0.7;"></span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <button class="refresh-btn" onclick="showServerConfig()" id="serverConfigBtn" title="切换服务器" style="font-size: 14px; padding: 6px 10px;">
+                    🌐
+                </button>
+                <button class="refresh-btn" onclick="manualRefresh()" id="refreshBtn" title="刷新连接和登录状态">
+                    🔄
+                </button>
+            </div>
+        </div>
+        
+        <!-- 下载配额显示 - 卡片布局 -->
+        <div class="quota-container" id="quotaContainer" style="display: none;">
+            <!-- 花瓣网配额卡片 -->
+            <div class="quota-card huaban" id="huabanQuotaCard">
+                <div class="quota-card-header">
+                    <div class="quota-card-title">
+                        <span class="quota-card-icon">🎨</span>
+                        <span>花瓣网</span>
+                    </div>
+                    <span class="quota-status limited" id="huabanStatus">检查中...</span>
+                </div>
+                <!-- 已登录时显示 -->
+                <div id="huabanLoggedInContent">
+                    <div class="quota-value">
+                        <span id="huabanRemaining">-</span>
+                        <span class="quota-value-small">/ <span id="huabanTotal">10</span></span>
+                    </div>
+                    <div class="quota-progress">
+                        <div class="quota-progress-bar" id="huabanProgressBar"></div>
+                    </div>
+                </div>
+                <!-- 未登录时显示 -->
+                <div id="huabanNotLoggedInContent" style="display: none;">
+                    <div class="quota-not-logged-in">未登录</div>
+                </div>
+            </div>
+            
+            <!-- 觅元素配额卡片 -->
+            <div class="quota-card yuansu" id="yuansuQuotaCard">
+                <div class="quota-card-header">
+                    <div class="quota-card-title">
+                        <span class="quota-card-icon">Ⓜ</span>
+                        <span>觅元素</span>
+                    </div>
+                    <span class="quota-status unlimited" id="yuansuStatus">未登录</span>
+                </div>
+                <!-- 已登录时显示 -->
+                <div id="yuansuLoggedInContent" style="display: none;">
+                    <div class="quota-value">
+                        <span id="yuansuRemaining">0</span>
+                        <span class="quota-value-small">/ ∞</span>
+                    </div>
+                    <div class="quota-progress">
+                        <div class="quota-progress-bar" id="yuansuProgressBar" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <!-- 未登录时显示 -->
+                <div id="yuansuNotLoggedInContent">
+                    <div class="quota-not-logged-in">未登录</div>
+                </div>
+            </div>
+            
+            <!-- 90设计配额卡片 -->
+            <div class="quota-card ninetysheji" id="ninetyshejieQuotaCard">
+                <div class="quota-card-header">
+                    <div class="quota-card-title">
+                        <span class="quota-card-icon">90</span>
+                        <span>90设计</span>
+                    </div>
+                    <span class="quota-status unlimited" id="ninetyshejieStatus">未登录</span>
+                </div>
+                <!-- 已登录时显示 -->
+                <div id="ninetyshejieLoggedInContent" style="display: none;">
+                    <div class="quota-value">
+                        <span id="ninetyshejieRemaining">0</span>
+                        <span class="quota-value-small">/ ∞</span>
+                    </div>
+                    <div class="quota-progress">
+                        <div class="quota-progress-bar" id="ninetyshejieProgressBar" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <!-- 未登录时显示 -->
+                <div id="ninetyshejieNotLoggedInContent">
+                    <div class="quota-not-logged-in">未登录</div>
+                </div>
+            </div>
+            
+            <!-- 享设计配额卡片 -->
+            <div class="quota-card design006" id="design006QuotaCard">
+                <div class="quota-card-header">
+                    <div class="quota-card-title">
+                        <span class="quota-card-icon">∞</span>
+                        <span>享设计</span>
+                    </div>
+                    <span class="quota-status limited" id="design006Status">检查中...</span>
+                </div>
+                <!-- 已登录时显示 -->
+                <div id="design006LoggedInContent">
+                    <div class="quota-value">
+                        <span id="design006Remaining">-</span>
+                        <span class="quota-value-small">/ <span id="design006Total">10</span></span>
+                    </div>
+                    <div class="quota-progress">
+                        <div class="quota-progress-bar" id="design006ProgressBar"></div>
+                    </div>
+                </div>
+                <!-- 未登录时显示 -->
+                <div id="design006NotLoggedInContent" style="display: none;">
+                    <div class="quota-not-logged-in">未登录</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tab-buttons">
+            <button class="tab-btn" onclick="switchTab('member')">素材下载</button>
+            <button class="tab-btn" onclick="switchTab('admin')">管理员</button>
+        </div>
+        
+        <!-- 成员下载 -->
+        <div class="tab-content" id="memberTab">
+            <div class="input-group">
+                <label for="urlInput">素材链接</label>
+                <input 
+                    type="text" 
+                    id="urlInput" 
+                    placeholder="粘贴素材链接，自动识别花瓣网、觅元素、90设计或享设计..."
+                    oninput="detectUrlType()"
+                >
+                <div class="input-hint" id="urlHint" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span>支持网站：</span>
+                    <span style="background: #ee584a; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">花瓣网</span>
+                    <span style="background: #8b5cf6; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">觅元素</span>
+                    <span style="background: #f97316; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">90设计</span>
+                    <span style="background: #eab308; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px;">享设计</span>
+                    <span id="detectedSite" style="display: none; margin-left: auto; font-weight: 600;"></span>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="parseUrl()">
+                开始解析
+            </button>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <div>正在解析...</div>
+            </div>
+            
+            <div class="result" id="result">
+                <h3>📦 下载结果</h3>
+                <ul class="download-list" id="downloadList"></ul>
+            </div>
+            
+        </div>
+        
+        <!-- 管理员登录 -->
+        <div class="tab-content" id="adminTab">
+            <!-- 密码验证层 -->
+            <div class="admin-auth-layer" id="adminAuthLayer">
+                <div class="admin-auth-title">管理员验证</div>
+                <div class="admin-auth-desc">请输入管理员密码以访问管理功能<br>密码仅用于本地验证，不会上传到服务器</div>
+                <div class="admin-auth-input">
+                    <input 
+                        type="password" 
+                        id="adminPasswordInput" 
+                        placeholder="请输入管理员密码"
+                        maxlength="20"
+                        autocomplete="off"
+                        onkeypress="if(event.key === 'Enter') verifyAdminPassword()"
+                    >
+                </div>
+                <button class="btn btn-primary" onclick="verifyAdminPassword()" id="adminVerifyBtn" style="min-width: 200px; padding: 14px 28px; font-size: 16px; font-weight: 500;">
+                    验证密码
+                </button>
+            </div>
+            
+            <!-- 管理员内容区（需要密码验证后显示） -->
+            <div class="admin-content" id="adminContent">
+                <div class="admin-header">
+                    <h2>管理员控制面板</h2>
+                    <p>统一管理所有站点登录状态和系统设置</p>
+                </div>
+                
+                <!-- ==================== 花瓣网登录区域 ==================== -->
+            <div class="site-login-card huaban">
+                <h3 class="site-login-title">花瓣网登录管理</h3>
+                
+                <!-- 花瓣网已登录状态 -->
+                <div id="huabanLoggedInSection" style="display: none;">
+                    <div class="status-badge success">
+                        <span>已登录</span>
+                        <span>团队成员可以正常下载花瓣网素材</span>
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="huabanLogout()" id="huabanLogoutBtn" style="margin-top: 16px; width: 100%;">
+                        退出登录
+                    </button>
+                </div>
+                
+                <!-- 花瓣网未登录状态 -->
+                <div id="huabanLoginFormSection">
+                    <form id="huabanLoginForm" onsubmit="return false;">
+                        <div class="form-group">
+                            <label for="huabanAccount" class="form-label">账号</label>
+                            <input 
+                                type="text" 
+                                id="huabanAccount" 
+                                class="form-input"
+                                placeholder="请输入账号（手机号或邮箱）" 
+                                required
+                            />
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="huabanPassword" class="form-label">密码</label>
+                            <input 
+                                type="password" 
+                                id="huabanPassword" 
+                                class="form-input"
+                                placeholder="请输入密码" 
+                                required
+                            />
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" onclick="huabanLogin()" id="huabanLoginBtn" style="width: 100%; margin-top: 8px;">
+                            登录花瓣网
+                        </button>
+                    </form>
+                    
+                    <button class="btn btn-secondary" onclick="checkHuabanStatus()" style="margin-top: 12px; width: 100%;">
+                        检查状态
+                    </button>
+                    
+                    <details>
+                        <summary>查看使用说明</summary>
+                        <div class="info-box">
+                            ① 输入花瓣网账号和密码<br>
+                            ② 点击「登录花瓣网」按钮<br>
+                            ③ <strong>只需登录一次</strong>，长期有效
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <!-- ==================== 觅元素登录区域 ==================== -->
+            <div class="site-login-card yuansu">
+                <h3 class="site-login-title">觅元素登录管理</h3>
+                
+                <!-- 觅元素已登录状态 -->
+                <div id="yuansuLoggedInSection" style="display: none;">
+                    <div class="status-badge success">
+                        <span>已登录</span>
+                        <span>团队成员可以正常下载觅元素素材</span>
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="yuansuLogout()" id="yuansuLogoutBtn" style="margin-top: 16px; width: 100%;">
+                        退出登录
+                    </button>
+                </div>
+                
+                <!-- 觅元素未登录状态 -->
+                <div id="yuansuLoginFormSection">
+                    <!-- 二维码显示区域 -->
+                    <div id="yuansuQrCodeSection" style="display: none; margin-top: 15px;">
+                        <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <div style="font-size: 15px; font-weight: 600; margin-bottom: 15px; color: var(--text-primary);">
+                                请使用手机QQ扫描下方二维码
+                            </div>
+                            <img id="yuansuQrCodeImg" src="" style="max-width: 100%; height: auto; border-radius: 8px;" />
+                            <div style="margin-top: 15px; color: var(--text-secondary); font-size: 14px;">
+                                <div id="yuansuQrCodeStatus">等待扫码...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="yuansuQrLogin()" id="yuansuQrLoginBtn" style="margin-top: 15px; width: 100%;">
+                        开始QQ扫码登录
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="checkYuansuStatus()" style="margin-top: 12px; width: 100%;">
+                        检查状态
+                    </button>
+                    
+                    <details>
+                        <summary>查看使用说明</summary>
+                        <div class="info-box">
+                            ① 点击「开始QQ扫码登录」按钮<br>
+                            ② 服务器自动获取二维码（约5-10秒）<br>
+                            ③ 二维码会显示在<strong>插件界面中</strong><br>
+                            ④ 使用<strong>手机QQ</strong>扫描插件中显示的二维码<br>
+                            ⑤ 在手机上确认登录<br>
+                            ⑥ 系统自动检测登录状态（最多3分钟）<br>
+                            ⑦ <strong>只需登录一次</strong>，长期有效
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <!-- ==================== 90设计登录区域 ==================== -->
+            <div class="site-login-card ninetyshejie">
+                <h3 class="site-login-title">90设计登录管理</h3>
+                
+                <!-- 90设计已登录状态 -->
+                <div id="ninetyShejieLoggedInSection" style="display: none;">
+                    <div class="status-badge success">
+                        <span>已登录</span>
+                        <span>团队成员可以正常下载90设计素材</span>
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="ninetyShejieLogout()" id="ninetyShejieLogoutBtn" style="margin-top: 16px; width: 100%;">
+                        退出登录
+                    </button>
+                </div>
+                
+                <!-- 90设计未登录状态 -->
+                <div id="ninetyShejieLoginFormSection">
+                    <!-- 二维码显示区域 -->
+                    <div id="ninetyShejieQrCodeSection" style="display: none; margin-top: 15px;">
+                        <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <div style="font-size: 15px; font-weight: 600; margin-bottom: 15px; color: var(--text-primary);">
+                                请使用手机QQ扫描下方二维码
+                            </div>
+                            <img id="ninetyShejieQrCodeImg" src="" style="max-width: 100%; height: auto; border-radius: 8px;" />
+                            <div style="margin-top: 15px; color: var(--text-secondary); font-size: 14px;">
+                                <div id="ninetyShejieQrCodeStatus">等待扫码...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="ninetyShejieQrLogin()" id="ninetyShejieQrLoginBtn" style="margin-top: 15px; width: 100%;">
+                        开始QQ扫码登录
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="checkNinetyShejieStatus()" style="margin-top: 12px; width: 100%;">
+                        检查状态
+                    </button>
+                    
+                    <details>
+                        <summary>查看使用说明</summary>
+                        <div class="info-box">
+                            ① 点击「开始QQ扫码登录」按钮<br>
+                            ② 服务器自动获取二维码（约5-10秒）<br>
+                            ③ 二维码会显示在<strong>插件界面中</strong><br>
+                            ④ 使用<strong>手机QQ</strong>扫描插件中显示的二维码<br>
+                            ⑤ 在手机上确认登录<br>
+                            ⑥ 系统自动检测登录状态（最多3分钟）<br>
+                            ⑦ <strong>只需登录一次</strong>，长期有效
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <!-- ==================== 享设计登录区域 ==================== -->
+            <div class="site-login-card design006">
+                <h3 class="site-login-title">享设计登录管理</h3>
+                
+                <!-- 享设计已登录状态 -->
+                <div id="design006LoggedInSection" style="display: none;">
+                    <div class="status-badge success">
+                        <span>已登录</span>
+                        <span>团队成员可以正常下载享设计素材</span>
+                    </div>
+                    
+                    <button class="btn btn-danger" onclick="design006Logout()" id="design006LogoutBtn" style="margin-top: 16px; width: 100%;">
+                        退出登录
+                    </button>
+                </div>
+                
+                <!-- 享设计未登录状态 -->
+                <div id="design006LoginFormSection">
+                    <!-- 二维码显示区域 -->
+                    <div id="design006QrCodeSection" style="display: none; margin-top: 15px;">
+                        <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: 12px; border: 1px solid var(--border-color);">
+                            <div style="font-size: 15px; font-weight: 600; margin-bottom: 15px; color: var(--text-primary);">
+                                请使用手机QQ扫描下方二维码
+                            </div>
+                            <img id="design006QrCodeImg" src="" style="max-width: 100%; height: auto; border-radius: 8px;" />
+                            <div style="margin-top: 15px; color: var(--text-secondary); font-size: 14px;">
+                                <div id="design006QrCodeStatus">等待扫码...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="design006QrLogin()" id="design006QrLoginBtn" style="margin-top: 15px; width: 100%;">
+                        开始QQ扫码登录
+                    </button>
+                    
+                    <button class="btn btn-secondary" onclick="checkDesign006Status()" style="margin-top: 12px; width: 100%;">
+                        检查状态
+                    </button>
+                    
+                    <details>
+                        <summary>查看使用说明</summary>
+                        <div class="info-box">
+                            ① 点击「开始QQ扫码登录」按钮<br>
+                            ② 服务器自动获取二维码（约5-10秒）<br>
+                            ③ 二维码会显示在<strong>插件界面中</strong><br>
+                            ④ 使用<strong>手机QQ</strong>扫描插件中显示的二维码<br>
+                            ⑤ 在手机上确认登录<br>
+                            ⑥ 系统自动检测登录状态（最多3分钟）<br>
+                            ⑦ <strong>只需登录一次</strong>，长期有效
+                        </div>
+                    </details>
+                </div>
+            </div>
+            
+            <!-- ==================== 系统设置区域 ==================== -->
+            <div class="site-login-card" style="margin-top: 24px;">
+                <h3 class="site-login-title">系统设置</h3>
+                
+                <!-- 团队服务器配置 -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 12px 0; color: var(--text-primary); font-size: 15px; font-weight: 600;">
+                        团队服务器配置
+                    </h4>
+                    <div id="serverConfigList" style="margin-bottom: 12px;">
+                        <!-- 服务器配置列表将动态生成 -->
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-secondary" onclick="showAddServerDialog()" style="flex: 1;">
+                            添加服务器
+                        </button>
+                        <button class="btn btn-secondary" onclick="showQuickServerSwitch()" style="flex: 1;">
+                            快速切换
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="input-group" style="margin-top: 20px;">
+                    <label for="serverInput">当前服务器地址</label>
+                    <input 
+                        type="text" 
+                        id="serverInput" 
+                        placeholder="例如：http://192.168.1.100:3000"
+                        value="http://localhost:3000"
+                    >
+                    <div class="input-hint">每个团队可以配置不同的服务器地址，配置保存在本地浏览器</div>
+                </div>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" onclick="saveSettings()" style="flex: 1;">
+                        保存当前配置
+                    </button>
+                    <button class="btn btn-secondary" onclick="testServerConnection()" style="flex: 1;">
+                        测试连接
+                    </button>
+                </div>
+                
+                <!-- 密码管理 -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 10px 0; color: var(--text-primary); font-size: 15px; font-weight: 600;">
+                        密码管理
+                    </h4>
+                    
+                    <!-- 密码修改表单 -->
+                    <div id="passwordChangeForm" style="display: none; background: var(--bg-tertiary); padding: 16px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label for="currentPasswordInput">当前密码</label>
+                            <input 
+                                type="password" 
+                                id="currentPasswordInput" 
+                                placeholder="请输入当前密码"
+                                style="font-family: 'Consolas', monospace;"
+                            >
+                        </div>
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label for="newPasswordInput">新密码</label>
+                            <input 
+                                type="password" 
+                                id="newPasswordInput" 
+                                placeholder="请输入新密码（6-20位）"
+                                style="font-family: 'Consolas', monospace;"
+                            >
+                            <div class="input-hint" id="passwordStrength"></div>
+                        </div>
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label for="confirmPasswordInput">确认密码</label>
+                            <input 
+                                type="password" 
+                                id="confirmPasswordInput" 
+                                placeholder="请再次输入新密码"
+                                style="font-family: 'Consolas', monospace;"
+                            >
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary" onclick="submitPasswordChange()" style="flex: 1;">
+                                确认修改
+                            </button>
+                            <button class="btn btn-secondary" onclick="cancelPasswordChange()" style="flex: 1;">
+                                取消
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary" onclick="showPasswordChangeForm()" style="flex: 1; min-width: 150px;">
+                            修改密码
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetAdminPassword()" style="flex: 1; min-width: 150px;">
+                            重置密码
+                        </button>
+                    </div>
+                    <div class="info-box" style="margin-top: 10px;">
+                        <strong>密码说明</strong><br>
+                        • 默认密码：321123<br>
+                        • 修改后的密码保存在本地浏览器<br>
+                        • 忘记密码可点击"重置密码"恢复默认
+                    </div>
+                </div>
+                
+                <!-- Downloads路径配置 -->
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <h4 style="margin: 0 0 10px 0; color: var(--text-primary); font-size: 15px; font-weight: 600;">
+                        下载目录配置
+                    </h4>
+                    <div class="input-group">
+                        <label for="downloadsPathInput">下载文件夹路径</label>
+                        <input 
+                            type="text" 
+                            id="downloadsPathInput" 
+                            placeholder="例如：C:\Downloads 或 /home/user/Downloads"
+                            style="font-family: 'Consolas', monospace;"
+                        >
+                        <div class="input-hint" id="downloadsPathStatus">
+                            当前路径：加载中...
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                        <button class="btn btn-primary" onclick="setDownloadsPath()" style="flex: 1; min-width: 150px;">
+                            保存路径
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadDownloadsPath()" style="flex: 1; min-width: 150px;">
+                            刷新
+                        </button>
+                    </div>
+                    <div class="info-box" style="margin-top: 10px;">
+                        <strong>路径说明</strong><br>
+                        • Windows示例：<code>C:\Downloads</code> 或 <code>D:\素材\下载</code><br>
+                        • Linux/Mac示例：<code>/home/user/Downloads</code><br>
+                        • 相对路径：<code>Downloads</code>（服务器目录下）<br>
+                        • 路径会自动创建，请确保有写入权限
+                    </div>
+                </div>
+                
+                <div class="info-box" style="margin-top: 15px; background: white;">
+                    <strong>📋 服务器部署</strong><br>
+                    本地部署：直接启动即可<br>
+                    远程部署：修改服务器地址为远程IP<br>
+                    <code style="background: #e0e7ff; padding: 6px 12px; border-radius: 6px; display: inline-block; margin-top: 10px; font-family: 'Consolas', monospace; color: #6366f1; font-weight: 600;">
+                        cd server && npm install && node server-browser.js
+                    </code>
+                </div>
+            </div>
+            
+            </div><!-- 关闭 admin-content -->
+        </div><!-- 关闭 adminTab -->
+        
+    </div>
+    
+    <script>
+        let serverUrl = localStorage.getItem('serverUrl') || 'http://localhost:3000';
+        let currentTab = 'member';
+        
+        // 管理员密码管理（默认密码：321123）
+        const DEFAULT_PASSWORD = '321123';
+        let ADMIN_PASSWORD = localStorage.getItem('adminPassword') || DEFAULT_PASSWORD;
+        let isAdminUnlocked = false; // 管理员是否已验证
+        
+        // 管理员密码验证
+        function verifyAdminPassword() {
+            const input = document.getElementById('adminPasswordInput').value;
+            const btn = document.getElementById('adminVerifyBtn');
+            
+            if (!input) {
+                alert('❌ 请输入密码');
+                return;
+            }
+            
+            if (input === ADMIN_PASSWORD) {
+                // 验证成功
+                isAdminUnlocked = true;
+                document.getElementById('adminAuthLayer').style.display = 'none';
+                document.getElementById('adminContent').classList.add('unlocked');
+                
+                // 保存会话状态（关闭页面后需要重新验证）
+                sessionStorage.setItem('adminUnlocked', 'true');
+                
+                // 加载Downloads路径配置
+                loadDownloadsPath();
+            } else {
+                // 验证失败
+                alert('❌ 密码错误，请重试');
+                document.getElementById('adminPasswordInput').value = '';
+                document.getElementById('adminPasswordInput').focus();
+            }
+        }
+        
+        // 显示密码修改表单
+        function showPasswordChangeForm() {
+            const form = document.getElementById('passwordChangeForm');
+            form.style.display = 'block';
+            
+            // 清空输入框
+            document.getElementById('currentPasswordInput').value = '';
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
+            document.getElementById('passwordStrength').innerHTML = '';
+            
+            // 聚焦到第一个输入框
+            document.getElementById('currentPasswordInput').focus();
+        }
+        
+        // 取消密码修改
+        function cancelPasswordChange() {
+            document.getElementById('passwordChangeForm').style.display = 'none';
+        }
+        
+        // 检查密码强度
+        function checkPasswordStrength(password) {
+            const strengthHint = document.getElementById('passwordStrength');
+            
+            if (!password) {
+                strengthHint.innerHTML = '';
+                return;
+            }
+            
+            if (password.length < 6) {
+                strengthHint.innerHTML = '⚠️ 密码太短（至少6位）';
+                strengthHint.style.color = '#dc2626';
+                return 'weak';
+            }
+            
+            if (password.length > 20) {
+                strengthHint.innerHTML = '⚠️ 密码太长（最多20位）';
+                strengthHint.style.color = '#dc2626';
+                return 'invalid';
+            }
+            
+            let strength = 0;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            if (strength <= 1) {
+                strengthHint.innerHTML = '💛 密码强度：弱';
+                strengthHint.style.color = '#f59e0b';
+                return 'weak';
+            } else if (strength === 2) {
+                strengthHint.innerHTML = '💚 密码强度：中';
+                strengthHint.style.color = '#10b981';
+                return 'medium';
+            } else {
+                strengthHint.innerHTML = '💙 密码强度：强';
+                strengthHint.style.color = '#3b82f6';
+                return 'strong';
+            }
+        }
+        
+        // 提交密码修改
+        function submitPasswordChange() {
+            const currentPassword = document.getElementById('currentPasswordInput').value;
+            const newPassword = document.getElementById('newPasswordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+            
+            // 验证当前密码
+            if (!currentPassword) {
+                alert('❌ 请输入当前密码');
+                document.getElementById('currentPasswordInput').focus();
+                return;
+            }
+            
+            if (currentPassword !== ADMIN_PASSWORD) {
+                alert('❌ 当前密码错误');
+                document.getElementById('currentPasswordInput').value = '';
+                document.getElementById('currentPasswordInput').focus();
+                return;
+            }
+            
+            // 验证新密码
+            if (!newPassword) {
+                alert('❌ 请输入新密码');
+                document.getElementById('newPasswordInput').focus();
+                return;
+            }
+            
+            if (newPassword.length < 6 || newPassword.length > 20) {
+                alert('❌ 密码长度必须在6-20位之间');
+                document.getElementById('newPasswordInput').focus();
+                return;
+            }
+            
+            // 验证确认密码
+            if (!confirmPassword) {
+                alert('❌ 请确认新密码');
+                document.getElementById('confirmPasswordInput').focus();
+                return;
+            }
+            
+            if (confirmPassword !== newPassword) {
+                alert('❌ 两次输入的密码不一致');
+                document.getElementById('confirmPasswordInput').value = '';
+                document.getElementById('confirmPasswordInput').focus();
+                return;
+            }
+            
+            // 保存新密码
+            ADMIN_PASSWORD = newPassword;
+            localStorage.setItem('adminPassword', newPassword);
+            
+            // 隐藏表单
+            document.getElementById('passwordChangeForm').style.display = 'none';
+            
+            alert('✅ 密码修改成功！\n\n请妥善保管新密码。');
+        }
+        
+        // 重置管理员密码
+        function resetAdminPassword() {
+            if (!confirm('确定要重置密码为默认密码吗？\n\n默认密码：321123')) {
+                return;
+            }
+            
+            ADMIN_PASSWORD = DEFAULT_PASSWORD;
+            localStorage.setItem('adminPassword', DEFAULT_PASSWORD);
+            
+            alert('✅ 密码已重置为默认密码：321123');
+        }
+        
+        // 加载Downloads路径
+        async function loadDownloadsPath() {
+            try {
+                const response = await fetch(`${serverUrl}/api/config/downloads`);
+                const data = await response.json();
+                
+                const input = document.getElementById('downloadsPathInput');
+                const status = document.getElementById('downloadsPathStatus');
+                
+                if (response.ok) {
+                    input.value = data.downloadsPath;
+                    status.innerHTML = `💡 当前路径：<code style="background: #dbeafe; padding: 2px 6px; border-radius: 4px;">${data.downloadsPath}</code> ${data.exists ? '✅' : '⚠️ 目录不存在'}`;
+                    status.style.color = data.exists ? '#047857' : '#dc2626';
+                } else {
+                    status.innerHTML = '❌ 无法获取路径配置';
+                    status.style.color = '#dc2626';
+                }
+            } catch (error) {
+                console.error('加载Downloads路径失败:', error);
+                document.getElementById('downloadsPathStatus').innerHTML = '❌ 服务器连接失败';
+                document.getElementById('downloadsPathStatus').style.color = '#dc2626';
+            }
+        }
+        
+        // 设置Downloads路径
+        async function setDownloadsPath() {
+            const input = document.getElementById('downloadsPathInput');
+            const downloadsPath = input.value.trim();
+            
+            if (!downloadsPath) {
+                alert('❌ 请输入下载路径');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${serverUrl}/api/config/downloads`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ downloadsPath })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}\n\n新路径：${data.downloadsPath}`);
+                    await loadDownloadsPath(); // 重新加载显示
+                } else {
+                    alert(`❌ ${data.message}`);
+                }
+            } catch (error) {
+                console.error('设置Downloads路径失败:', error);
+                alert('❌ 设置失败，请检查服务器连接');
+            }
+        }
+        
+        // 支持回车键验证
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('adminPasswordInput');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyAdminPassword();
+                    }
+                });
+            }
+            
+            // 新密码输入框实时检测强度
+            const newPasswordInput = document.getElementById('newPasswordInput');
+            if (newPasswordInput) {
+                newPasswordInput.addEventListener('input', function(e) {
+                    checkPasswordStrength(e.target.value);
+                });
+                
+                // 支持回车键跳转到下一个输入框
+                newPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('confirmPasswordInput').focus();
+                    }
+                });
+            }
+            
+            // 当前密码输入框回车跳转
+            const currentPasswordInput = document.getElementById('currentPasswordInput');
+            if (currentPasswordInput) {
+                currentPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        document.getElementById('newPasswordInput').focus();
+                    }
+                });
+            }
+            
+            // 确认密码输入框回车提交
+            const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+            if (confirmPasswordInput) {
+                confirmPasswordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        submitPasswordChange();
+                    }
+                });
+            }
+            
+            // 检查会话状态
+            if (sessionStorage.getItem('adminUnlocked') === 'true') {
+                isAdminUnlocked = true;
+                document.getElementById('adminAuthLayer').style.display = 'none';
+                document.getElementById('adminContent').classList.add('unlocked');
+            }
+        });
+        
+        // 多服务器配置管理
+        function getServerConfigs() {
+            const configs = localStorage.getItem('serverConfigs');
+            return configs ? JSON.parse(configs) : [];
+        }
+        
+        function saveServerConfigs(configs) {
+            localStorage.setItem('serverConfigs', JSON.stringify(configs));
+        }
+        
+        function addServerConfig(name, url) {
+            const configs = getServerConfigs();
+            // 检查是否已存在
+            if (configs.some(c => c.url === url)) {
+                alert('该服务器地址已存在');
+                return false;
+            }
+            configs.push({ name, url, createdAt: new Date().toISOString() });
+            saveServerConfigs(configs);
+            renderServerConfigList();
+            return true;
+        }
+        
+        function removeServerConfig(url) {
+            const configs = getServerConfigs();
+            const filtered = configs.filter(c => c.url !== url);
+            saveServerConfigs(filtered);
+            renderServerConfigList();
+        }
+        
+        function switchToServer(url) {
+            serverUrl = url;
+            localStorage.setItem('serverUrl', serverUrl);
+            document.getElementById('serverInput').value = serverUrl;
+            updateServerUrlDisplay();
+            checkConnection();
+            alert('✅ 已切换到: ' + url);
+        }
+        
+        function renderServerConfigList() {
+            const container = document.getElementById('serverConfigList');
+            const configs = getServerConfigs();
+            
+            if (configs.length === 0) {
+                container.innerHTML = '<div style="padding: 12px; background: rgba(255,255,255,0.5); border-radius: 8px; color: var(--text-secondary); font-size: 13px; text-align: center;">暂无保存的服务器配置</div>';
+                return;
+            }
+            
+            container.innerHTML = configs.map((config, index) => {
+                const isCurrent = config.url === serverUrl;
+                return `
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 10px; background: ${isCurrent ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255,255,255,0.5)'}; border-radius: 8px; margin-bottom: 8px; border: ${isCurrent ? '2px solid #6366f1' : '1px solid rgba(0,0,0,0.1)'};">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500; color: var(--text-primary); font-size: 14px;">
+                                ${config.name || '未命名服务器'}
+                                ${isCurrent ? '<span style="color: #6366f1; font-size: 11px; margin-left: 6px;">(当前)</span>' : ''}
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 2px;">
+                                ${config.url}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 4px;">
+                            ${!isCurrent ? `<button onclick="switchToServer('${config.url}')" style="padding: 4px 8px; background: #6366f1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">切换</button>` : ''}
+                            <button onclick="removeServerConfig('${config.url}')" style="padding: 4px 8px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">删除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function showAddServerDialog() {
+            const name = prompt('请输入服务器名称（例如：团队A服务器）:');
+            if (!name) return;
+            
+            const url = prompt('请输入服务器地址（例如：http://192.168.1.100:3000）:');
+            if (!url) return;
+            
+            // 验证URL格式
+            try {
+                new URL(url);
+            } catch (e) {
+                alert('❌ 服务器地址格式不正确，请包含 http:// 或 https://');
+                return;
+            }
+            
+            if (addServerConfig(name.trim(), url.trim())) {
+                alert('✅ 服务器配置已添加');
+            }
+        }
+        
+        function showQuickServerSwitch() {
+            const configs = getServerConfigs();
+            if (configs.length === 0) {
+                alert('暂无保存的服务器配置，请先添加');
+                return;
+            }
+            
+            const options = configs.map((c, i) => `${i + 1}. ${c.name || '未命名'} (${c.url})`).join('\n');
+            const choice = prompt(`请选择要切换的服务器:\n\n${options}\n\n请输入序号:`);
+            
+            if (!choice) return;
+            
+            const index = parseInt(choice) - 1;
+            if (index >= 0 && index < configs.length) {
+                switchToServer(configs[index].url);
+            } else {
+                alert('❌ 无效的序号');
+            }
+        }
+        
+        function showServerConfig() {
+            // 切换到管理员标签并显示服务器配置
+            switchTab('admin');
+            // 如果未解锁，提示解锁
+            if (!isAdminUnlocked) {
+                alert('💡 请先输入管理员密码解锁，然后在"系统设置"中配置服务器');
+            }
+        }
+        
+        function testServerConnection() {
+            const url = document.getElementById('serverInput').value.trim();
+            if (!url) {
+                alert('请输入服务器地址');
+                return;
+            }
+            
+            // 验证URL格式
+            try {
+                new URL(url);
+            } catch (e) {
+                alert('❌ 服务器地址格式不正确，请包含 http:// 或 https://');
+                return;
+            }
+            
+            // 测试连接
+            fetch(`${url}/api/health`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        alert('✅ 连接成功！\n\n服务器状态: 正常\n浏览器就绪: ' + (data.browserReady ? '是' : '否'));
+                    } else {
+                        alert('⚠️ 服务器响应异常');
+                    }
+                })
+                .catch(error => {
+                    alert('❌ 连接失败\n\n可能的原因:\n1. 服务器未启动\n2. 地址不正确\n3. 网络不通\n\n错误: ' + error.message);
+                });
+        }
+        
+        function updateServerUrlDisplay() {
+            const display = document.getElementById('serverUrlDisplay');
+            if (display) {
+                display.textContent = serverUrl;
+            }
+        }
+        
+        // 初始化
+        document.getElementById('serverInput').value = serverUrl;
+        updateServerUrlDisplay();
+        renderServerConfigList();
+        switchTab('member');
+        checkConnection();
+        
+        // 🎯 移除定时刷新，改为仅在解析素材后更新配额
+        // 解析成功后会自动调用 updateDownloadQuota()
+        
+        // 切换标签
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.tab-btn').forEach((btn, index) => {
+                btn.classList.remove('active');
+                if ((index === 0 && tab === 'member') ||
+                    (index === 1 && tab === 'admin')) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // 更新内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tab + 'Tab').classList.add('active');
+            
+            // 切换到管理员标签且已验证时，加载Downloads路径和服务器配置
+            if (tab === 'admin' && isAdminUnlocked) {
+                loadDownloadsPath();
+                renderServerConfigList();
+            }
+        }
+        
+        // 保存设置
+        function saveSettings() {
+            const input = document.getElementById('serverInput').value.trim();
+            if (!input) {
+                alert('请输入服务器地址');
+                return;
+            }
+            
+            // 验证URL格式
+            try {
+                new URL(input);
+            } catch (e) {
+                alert('❌ 服务器地址格式不正确，请包含 http:// 或 https://');
+                return;
+            }
+            
+            serverUrl = input;
+            localStorage.setItem('serverUrl', serverUrl);
+            updateServerUrlDisplay();
+            
+            // 如果该服务器不在配置列表中，提示是否保存
+            const configs = getServerConfigs();
+            if (!configs.some(c => c.url === serverUrl)) {
+                const save = confirm('是否将此服务器保存到配置列表？\n\n点击"确定"保存，点击"取消"仅临时使用');
+                if (save) {
+                    const name = prompt('请输入服务器名称（例如：团队A服务器）:', '服务器 ' + (configs.length + 1));
+                    if (name) {
+                        addServerConfig(name.trim(), serverUrl);
+                    }
+                }
+            }
+            
+            checkConnection();
+            alert('✅ 设置已保存');
+        }
+        
+        // 检查连接
+        async function checkConnection() {
+            try {
+                const res = await fetch(`${serverUrl}/api/health`);
+                const data = await res.json();
+                
+                if (data.status === 'ok') {
+                    updateStatus(true, '已连接');
+                    
+                    // 同步花瓣网登录状态到UI
+                    if (data.isLoggedIn !== undefined) {
+                        updateHuabanLoginUI(data.isLoggedIn);
+                    }
+                    
+                    // 检查觅元素登录状态
+                    try {
+                        const yuansuRes = await fetch(`${serverUrl}/api/yuansu/status`);
+                        const yuansuData = await yuansuRes.json();
+                        console.log('🔍 觅元素状态检查结果:', yuansuData);
+                        updateYuansuLoginUI(yuansuData.isLoggedIn);
+                    } catch (error) {
+                        // 觅元素状态检查失败，可能功能未初始化，设置为未登录
+                        console.log('⚠️  觅元素状态检查失败:', error);
+                        updateYuansuLoginUI(false); // 重要：设置为未登录状态
+                    }
+                    
+                    // 检查90设计登录状态
+                    try {
+                        const ninetyShejieRes = await fetch(`${serverUrl}/api/90sheji/status`);
+                        const ninetyShejieData = await ninetyShejieRes.json();
+                        console.log('🔍 90设计状态检查结果:', ninetyShejieData);
+                        updateNinetyShejieLoginUI(ninetyShejieData.isLoggedIn);
+                    } catch (error) {
+                        // 90设计状态检查失败，可能功能未初始化，设置为未登录
+                        console.log('⚠️  90设计状态检查失败:', error);
+                        updateNinetyShejieLoginUI(false);
+                    }
+                    
+                    // 检查享设计登录状态
+                    try {
+                        const design006Res = await fetch(`${serverUrl}/api/design006/status`);
+                        const design006Data = await design006Res.json();
+                        console.log('🔍 享设计状态检查结果:', design006Data);
+                        updateDesign006LoginUI(design006Data.isLoggedIn);
+                    } catch (error) {
+                        // 享设计状态检查失败，可能功能未初始化，设置为未登录
+                        console.log('⚠️  享设计状态检查失败:', error);
+                        updateDesign006LoginUI(false);
+                    }
+                    
+                    // 获取下载次数信息
+                    await updateDownloadQuota();
+                } else {
+                    updateStatus(false, '服务器未就绪');
+                    // 服务器未就绪时，重置登录状态
+                    updateHuabanLoginUI(false);
+                    updateYuansuLoginUI(false);
+                    updateNinetyShejieLoginUI(false);
+                }
+            } catch (error) {
+                updateStatus(false, '未连接');
+                // 连接失败时，重置登录状态
+                updateHuabanLoginUI(false);
+                updateYuansuLoginUI(false);
+                updateNinetyShejieLoginUI(false);
+            }
+        }
+        
+        // 更新下载配额显示
+        async function updateDownloadQuota() {
+            try {
+                const res = await fetch(`${serverUrl}/api/downloads/daily-quota`);
+                const result = await res.json();
+                
+                if (!result.success) {
+                    throw new Error(result.message || '获取配额失败');
+                }
+                
+                const data = result.data;
+                
+                // 🔍 添加调试日志
+                console.log('📊 [前端] 收到花瓣网配额数据:', {
+                    used: data.huaban?.used,
+                    limit: data.huaban?.limit,
+                    remaining: data.huaban?.remaining
+                });
+                
+                // 显示配额容器
+                const quotaContainer = document.getElementById('quotaContainer');
+                quotaContainer.style.display = 'grid';
+                
+                // 更新花瓣网配额卡片
+                if (data.huaban) {
+                    const huabanRemaining = document.getElementById('huabanRemaining');
+                    const huabanTotal = document.getElementById('huabanTotal');
+                    const huabanProgressBar = document.getElementById('huabanProgressBar');
+                    
+                    // 🎯 显示已使用次数，而不是剩余次数
+                    huabanRemaining.textContent = data.huaban.used;
+                    huabanTotal.textContent = data.huaban.limit;
+                    
+                    // 🎯 计算花瓣网已使用百分比
+                    const usedPercentage = (data.huaban.used / data.huaban.limit) * 100;
+                    huabanProgressBar.style.width = usedPercentage + '%';
+                    
+                    console.log('📊 配额卡片更新 - 花瓣网:', {
+                        used: data.huaban.used,
+                        limit: data.huaban.limit,
+                        remaining: data.huaban.remaining,
+                        percentage: usedPercentage.toFixed(1) + '%'
+                    });
+                }
+                
+                // 更新享设计配额卡片
+                if (data.design006) {
+                    const design006Remaining = document.getElementById('design006Remaining');
+                    const design006Total = document.getElementById('design006Total');
+                    const design006ProgressBar = document.getElementById('design006ProgressBar');
+                    
+                    if (design006Remaining && design006Total && design006ProgressBar) {
+                        // 🎯 显示已使用次数，而不是剩余次数
+                        design006Remaining.textContent = data.design006.used;
+                        design006Total.textContent = data.design006.limit;
+                        
+                        // 🎯 计算享设计已使用百分比
+                        const usedPercentage = (data.design006.used / data.design006.limit) * 100;
+                        design006ProgressBar.style.width = usedPercentage + '%';
+                        
+                        console.log('📊 配额卡片更新 - 享设计:', {
+                            used: data.design006.used,
+                            limit: data.design006.limit,
+                            remaining: data.design006.remaining,
+                            percentage: usedPercentage.toFixed(1) + '%'
+                        });
+                    }
+                }
+                
+                // 更新觅元素配额卡片（显示统计信息）
+                if (data.yuansu) {
+                    const yuansuRemaining = document.getElementById('yuansuRemaining');
+                    const yuansuStatus = document.getElementById('yuansuStatus');
+                    const yuansuLoggedInContent = document.getElementById('yuansuLoggedInContent');
+                    
+                    // 检查是否已登录（通过检查登录内容是否显示）
+                    const isLoggedIn = yuansuLoggedInContent && yuansuLoggedInContent.style.display !== 'none';
+                    
+                    if (isLoggedIn) {
+                        // 已登录时才更新数据
+                        if (yuansuRemaining) {
+                            yuansuRemaining.textContent = data.yuansu.used;
+                        }
+                        
+                        // 🎯 更新状态文本为"已登录"，使用觅元素专属颜色
+                        if (yuansuStatus) {
+                            yuansuStatus.textContent = '已登录';
+                            yuansuStatus.className = 'quota-status yuansu-logged';
+                        }
+                        
+                        console.log('📊 配额卡片更新 - 觅元素:', {
+                            used: data.yuansu.used,
+                            total: data.yuansu.total
+                        });
+                    } else {
+                        // 未登录时保持"未登录"状态
+                        if (yuansuStatus && yuansuStatus.textContent !== '未登录') {
+                            yuansuStatus.textContent = '未登录';
+                            yuansuStatus.className = 'quota-status limited';
+                        }
+                    }
+                }
+                
+                // 更新90设计配额卡片（显示统计信息）
+                if (data.ninetyshejie) {
+                    const ninetyshejieRemaining = document.getElementById('ninetyshejieRemaining');
+                    const ninetyshejieStatus = document.getElementById('ninetyshejieStatus');
+                    const ninetyshejieLoggedInContent = document.getElementById('ninetyshejieLoggedInContent');
+                    
+                    // 检查是否已登录（通过检查登录内容是否显示）
+                    const isLoggedIn = ninetyshejieLoggedInContent && ninetyshejieLoggedInContent.style.display !== 'none';
+                    
+                    if (isLoggedIn) {
+                        // 已登录时才更新数据
+                        if (ninetyshejieRemaining) {
+                            ninetyshejieRemaining.textContent = data.ninetyshejie.used;
+                        }
+                        
+                        // 🎯 更新状态文本为"已登录"，使用90设计专属颜色
+                        if (ninetyshejieStatus) {
+                            ninetyshejieStatus.textContent = '已登录';
+                            ninetyshejieStatus.className = 'quota-status ninetyshejie-logged';
+                        }
+                        
+                        console.log('📊 配额卡片更新 - 90设计:', {
+                            used: data.ninetyshejie.used,
+                            total: data.ninetyshejie.total
+                        });
+                    } else {
+                        // 未登录时保持"未登录"状态
+                        if (ninetyshejieStatus && ninetyshejieStatus.textContent !== '未登录') {
+                            ninetyshejieStatus.textContent = '未登录';
+                            ninetyshejieStatus.className = 'quota-status limited';
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('获取下载配额失败:', error);
+                // 即使获取失败也显示配额容器，因为需要显示登录状态
+                const quotaContainer = document.getElementById('quotaContainer');
+                quotaContainer.style.display = 'grid';
+            }
+        }
+        
+        // 开始浏览器登录
+        async function startBrowserLogin() {
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.textContent = '🔄 正在打开浏览器...';
+            
+            try {
+                const res = await fetch(`${serverUrl}/api/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ ' + data.message + '\n\n请在打开的浏览器窗口中完成登录操作。');
+                    
+                    // 开始轮询检查登录状态
+                    startLoginPolling();
+                } else {
+                    throw new Error(data.error || '未知错误');
+                }
+                
+            } catch (error) {
+                alert('❌ 操作失败：' + error.message);
+                btn.disabled = false;
+                btn.textContent = '🚀 开始登录';
+            }
+        }
+        
+        // ==================== 花瓣网登录函数 ====================
+        
+        // 花瓣网账号密码登录
+        async function huabanLogin() {
+            const account = document.getElementById('huabanAccount').value.trim();
+            const password = document.getElementById('huabanPassword').value;
+            const btn = document.getElementById('huabanLoginBtn');
+            
+            if (!account || !password) {
+                alert('❌ 请输入账号和密码');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '🔄 正在登录...';
+            
+            try {
+                const res = await fetch(`${serverUrl}/api/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ account, password })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ 花瓣网登录成功！\n\n团队成员现在可以使用下载功能了。');
+                    
+                    // 更新UI
+                    updateHuabanLoginUI(true);
+                    
+                    // 更新配额显示
+                    await updateDownloadQuota();
+                    
+                    // 清空表单
+                    document.getElementById('huabanAccount').value = '';
+                    document.getElementById('huabanPassword').value = '';
+                } else {
+                    throw new Error(data.error || '登录失败');
+                }
+                
+            } catch (error) {
+                alert('❌ 花瓣网登录失败：' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔐 登录花瓣网';
+            }
+        }
+        
+        // 花瓣网退出登录
+        async function huabanLogout() {
+            if (!confirm('确定要退出花瓣网登录吗？\n\n退出后团队成员将无法下载花瓣网素材。')) {
+                return;
+            }
+            
+            const btn = document.getElementById('huabanLogoutBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '🔄 正在退出...';
+            
+            try {
+                const res = await fetch(`${serverUrl}/api/admin/logout`, {
+                    method: 'POST'
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ 已退出花瓣网登录\n\n' + data.message);
+                    
+                    // 更新UI为未登录状态
+                    updateHuabanLoginUI(false);
+                    updateQuotaCardUI('huaban', false);
+                } else {
+                    throw new Error(data.error || '退出失败');
+                }
+                
+            } catch (error) {
+                alert('❌ 退出失败：' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // 更新花瓣网登录UI状态
+        function updateHuabanLoginUI(isLoggedIn) {
+            const loggedInSection = document.getElementById('huabanLoggedInSection');
+            const loginFormSection = document.getElementById('huabanLoginFormSection');
+            
+            console.log('🎨 更新花瓣UI状态:', isLoggedIn ? '已登录' : '未登录');
+            
+            if (isLoggedIn) {
+                // 显示已登录状态
+                loggedInSection.style.display = 'block';
+                loginFormSection.style.display = 'none';
+            } else {
+                // 显示登录表单
+                loggedInSection.style.display = 'none';
+                loginFormSection.style.display = 'block';
+            }
+            
+            // 更新配额卡片UI
+            updateQuotaCardUI('huaban', isLoggedIn);
+        }
+        
+        // 检查花瓣网登录状态
+        async function checkHuabanStatus() {
+            try {
+                const res = await fetch(`${serverUrl}/api/status`);
+                const data = await res.json();
+                
+                // 更新UI
+                updateHuabanLoginUI(data.isLoggedIn);
+                
+                if (data.isLoggedIn) {
+                    alert(`✅ 花瓣网已登录！\n\nCookie数量：${data.cookieCount}\n${data.message}`);
+                } else {
+                    alert(`❌ 花瓣网未登录\n\n${data.message || '请先完成登录'}`);
+                }
+                
+            } catch (error) {
+                alert('❌ 检查失败：' + error.message);
+            }
+        }
+        
+        // ==================== 觅元素登录函数 ====================
+        
+        // 觅元素QQ扫码登录
+        let yuansuLoginPollInterval = null; // 轮询定时器
+        let yuansuLoginInProgress = false; // 登录进行中标志
+        let yuansuLoginSuccessShown = false; // 登录成功提示已显示标志
+        
+        async function yuansuQrLogin() {
+            const btn = document.getElementById('yuansuQrLoginBtn');
+            const qrSection = document.getElementById('yuansuQrCodeSection');
+            const qrImg = document.getElementById('yuansuQrCodeImg');
+            const qrStatus = document.getElementById('yuansuQrCodeStatus');
+            
+            // 先清除可能存在的旧定时器，防止重复轮询
+            if (yuansuLoginPollInterval) {
+                console.log('⚠️  清除旧的轮询定时器');
+                clearInterval(yuansuLoginPollInterval);
+                yuansuLoginPollInterval = null;
+            }
+            
+            // 重置标志
+            yuansuLoginInProgress = true;
+            yuansuLoginSuccessShown = false;
+            
+            btn.disabled = true;
+            btn.textContent = '🔄 正在生成二维码...';
+            
+            try {
+                // 调用API获取二维码
+                const res = await fetch(`${serverUrl}/api/yuansu/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        account: 'qr_login',
+                        password: 'qr_login' 
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success && data.waiting && data.qrcode) {
+                    // 显示二维码
+                    qrImg.src = data.qrcode;
+                    qrSection.style.display = 'block';
+                    qrStatus.innerHTML = '⏳ 等待扫码...（最多3分钟）';
+                    btn.textContent = '⏳ 扫码中...';
+                    
+                    console.log('✅ 二维码已显示');
+                    
+                    // 🎯 等待3秒后再开始轮询，避免立即检测到旧的登录状态
+                    console.log('⏳ 等待3秒后开始轮询检查登录状态...');
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    // 开始轮询检查登录状态
+                    let elapsedSeconds = 0;
+                    console.log('🔄 开始轮询检查登录状态（每2秒一次）');
+                    yuansuLoginPollInterval = setInterval(async () => {
+                        elapsedSeconds += 2;
+                        
+                        // 更新倒计时显示
+                        const remainingSeconds = 180 - elapsedSeconds;
+                        if (remainingSeconds > 0) {
+                            qrStatus.innerHTML = `⏳ 等待扫码...（剩余 ${remainingSeconds} 秒）`;
+                        }
+                        
+                        // 检查登录状态
+                        try {
+                            const statusRes = await fetch(`${serverUrl}/api/yuansu/status`);
+                            const statusData = await statusRes.json();
+                            
+                            console.log('🔍 轮询检查:', {
+                                isLoggedIn: statusData.isLoggedIn,
+                                message: statusData.message,
+                                elapsed: elapsedSeconds
+                            });
+                            
+                            if (statusData.isLoggedIn) {
+                                // 登录成功 - 使用标志防止重复弹窗
+                                if (!yuansuLoginSuccessShown) {
+                                    console.log('🎉 检测到登录成功！（首次）');
+                                    yuansuLoginSuccessShown = true; // 立即设置标志
+                                    yuansuLoginInProgress = false;
+                                    
+                                    // 立即清除定时器，防止重复触发
+                                    if (yuansuLoginPollInterval) {
+                                        clearInterval(yuansuLoginPollInterval);
+                                        yuansuLoginPollInterval = null;
+                                    }
+                                    
+                                    qrSection.style.display = 'none';
+                                    btn.disabled = false;
+                                    btn.textContent = '📱 开始QQ扫码登录';
+                                    
+                                    // 更新配额卡片UI
+                                    updateQuotaCardUI('yuansu', true);
+                                    
+                                    // 显示成功提示（只显示一次）
+                                    alert('✅ 觅元素登录成功！\n\n团队成员现在可以下载觅元素素材了。');
+                                    updateYuansuLoginUI(true);
+                                } else {
+                                    console.log('⚠️  登录成功已处理，跳过重复弹窗');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('❌ 检查登录状态失败:', error);
+                        }
+                        
+                        // 超时检查（3分钟）
+                        if (elapsedSeconds >= 180) {
+                            // 清除定时器和标志
+                            if (yuansuLoginPollInterval) {
+                                clearInterval(yuansuLoginPollInterval);
+                                yuansuLoginPollInterval = null;
+                            }
+                            yuansuLoginInProgress = false;
+                            
+                            qrSection.style.display = 'none';
+                            btn.disabled = false;
+                            btn.textContent = '📱 开始QQ扫码登录';
+                            alert('⏰ 扫码超时\n\n请重新点击按钮再次尝试。');
+                        }
+                    }, 2000); // 每2秒检查一次
+                    
+                } else if (data.success && data.isLoggedIn) {
+                    // 已经登录
+                    alert('✅ 觅元素登录成功！\n\n' + data.message);
+                    updateYuansuLoginUI(true);
+                    btn.disabled = false;
+                    btn.textContent = '📱 开始QQ扫码登录';
+                } else {
+                    throw new Error(data.message || '获取二维码失败');
+                }
+                
+            } catch (error) {
+                // 清除可能存在的定时器和标志
+                if (yuansuLoginPollInterval) {
+                    clearInterval(yuansuLoginPollInterval);
+                    yuansuLoginPollInterval = null;
+                }
+                yuansuLoginInProgress = false;
+                yuansuLoginSuccessShown = false;
+                
+                alert('❌ 登录失败：' + error.message + '\n\n请确认服务器已启动。');
+                btn.disabled = false;
+                btn.textContent = '📱 开始QQ扫码登录';
+                qrSection.style.display = 'none';
+            }
+        }
+        
+        // 觅元素退出登录
+        async function yuansuLogout() {
+            if (!confirm('确定要退出觅元素登录吗？\n\n退出后团队成员将无法下载觅元素素材。')) {
+                return;
+            }
+            
+            // 清除可能存在的登录轮询定时器和标志
+            if (yuansuLoginPollInterval) {
+                clearInterval(yuansuLoginPollInterval);
+                yuansuLoginPollInterval = null;
+            }
+            yuansuLoginInProgress = false;
+            yuansuLoginSuccessShown = false;
+            
+            const btn = document.getElementById('yuansuLogoutBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '🔄 正在退出...';
+            
+            try {
+                const res = await fetch(`${serverUrl}/api/yuansu/logout`, {
+                    method: 'POST'
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ 已退出觅元素登录\n\n' + data.message);
+                    
+                    // 更新UI为未登录状态
+                    updateYuansuLoginUI(false);
+                    updateQuotaCardUI('yuansu', false);
+                } else {
+                    throw new Error(data.error || '退出失败');
+                }
+                
+            } catch (error) {
+                alert('❌ 退出失败：' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // 更新觅元素登录UI状态
+        function updateYuansuLoginUI(isLoggedIn) {
+            const loggedInSection = document.getElementById('yuansuLoggedInSection');
+            const loginFormSection = document.getElementById('yuansuLoginFormSection');
+            
+            console.log('🎨 更新觅元素UI状态:', isLoggedIn ? '已登录' : '未登录');
+            
+            if (isLoggedIn) {
+                loggedInSection.style.display = 'block';
+                loginFormSection.style.display = 'none';
+            } else {
+                loggedInSection.style.display = 'none';
+                loginFormSection.style.display = 'block';
+            }
+        }
+        
+        // 检查觅元素登录状态
+        async function checkYuansuStatus() {
+            try {
+                console.log('🔍 手动检查觅元素登录状态...');
+                const res = await fetch(`${serverUrl}/api/yuansu/status`);
+                const data = await res.json();
+                
+                console.log('📊 觅元素状态检查结果:', data);
+                
+                if (data.isLoggedIn) {
+                    // 🎉 检测到已登录，执行完整的登录成功处理
+                    console.log('✅ 检测到觅元素已登录！');
+                    
+                    // 清除轮询定时器（如果还在运行）
+                    if (yuansuLoginPollInterval) {
+                        console.log('🔄 清除现有的登录轮询定时器');
+                        clearInterval(yuansuLoginPollInterval);
+                        yuansuLoginPollInterval = null;
+                    }
+                    
+                    // 重置登录标志
+                    yuansuLoginInProgress = false;
+                    yuansuLoginSuccessShown = true; // 标记为已显示，避免重复提示
+                    
+                    // 隐藏二维码区域
+                    const qrSection = document.getElementById('yuansuQrCodeSection');
+                    if (qrSection && qrSection.style.display !== 'none') {
+                        qrSection.style.display = 'none';
+                        console.log('✅ 已隐藏二维码区域');
+                    }
+                    
+                    // 恢复登录按钮状态
+                    const loginBtn = document.getElementById('yuansuQrLoginBtn');
+                    if (loginBtn) {
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = '📱 开始QQ扫码登录';
+                    }
+                    
+                    // 更新UI为已登录状态
+                    updateYuansuLoginUI(true);
+                    
+                    // 更新配额卡片UI
+                    updateQuotaCardUI('yuansu', true);
+                    
+                    // 显示登录成功提示
+                    alert(`✅ 觅元素已登录！\n\n站点：${data.site?.name || '觅元素'}\n${data.message || '团队成员现在可以下载觅元素素材了。'}`);
+                } else {
+                    // 未登录
+                    console.log('❌ 觅元素未登录');
+                    updateYuansuLoginUI(false);
+                    updateQuotaCardUI('yuansu', false);
+                    alert(`❌ 觅元素未登录\n\n${data.message || '请先完成登录'}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ 检查觅元素状态失败:', error);
+                alert('❌ 检查失败：' + error.message);
+            }
+        }
+        
+        // 轮询检查登录状态
+        function startLoginPolling() {
+            const pollInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${serverUrl}/api/status`);
+                    const data = await res.json();
+                    
+                    if (data.isLoggedIn) {
+                        clearInterval(pollInterval);
+                        document.getElementById('loginStatus').style.display = 'block';
+                        document.getElementById('loginBtn').disabled = false;
+                        document.getElementById('loginBtn').textContent = '✅ 已登录';
+                        updateQuotaCardUI('huaban', true);
+                        alert('🎉 登录成功！\n\n团队成员现在可以使用下载功能了。');
+                    }
+                } catch (error) {
+                    // 继续轮询
+                }
+            }, 3000);  // 每3秒检查一次
+            
+            // 5分钟后停止轮询
+            setTimeout(() => {
+                clearInterval(pollInterval);
+                document.getElementById('loginBtn').disabled = false;
+                document.getElementById('loginBtn').textContent = '🚀 开始登录';
+            }, 300000);
+        }
+        
+        // 更新状态
+        function updateStatus(connected, text) {
+            const dot = document.getElementById('statusDot');
+            const status = document.getElementById('statusText');
+            
+            if (connected) {
+                dot.classList.add('connected');
+                status.textContent = text;
+            } else {
+                dot.classList.remove('connected');
+                status.textContent = text;
+            }
+            
+            // 更新服务器地址显示
+            updateServerUrlDisplay();
+        }
+        
+        // 检测URL类型
+        function detectUrlType() {
+            const url = document.getElementById('urlInput').value.trim();
+            const detectedSite = document.getElementById('detectedSite');
+            
+            if (!url) {
+                detectedSite.style.display = 'none';
+                return;
+            }
+            
+            let siteInfo = '';
+            let color = '';
+            
+            if (url.includes('51yuansu.com')) {
+                siteInfo = '✓ 识别为觅元素';
+                color = '#8b5cf6';
+            } else if (url.includes('90sheji.com')) {
+                siteInfo = '✓ 识别为90设计';
+                color = '#f97316';
+            } else if (url.includes('design006.com')) {
+                siteInfo = '✓ 识别为享设计';
+                color = '#eab308';
+            } else if (url.includes('huaban.com/pins/')) {
+                siteInfo = '✓ 识别为花瓣网 Pin';
+                color = '#ee584a';
+            } else if (url.includes('huaban.com/boards/')) {
+                siteInfo = '✓ 识别为花瓣网画板';
+                color = '#ee584a';
+            } else if (url.includes('huaban.com')) {
+                siteInfo = '? 花瓣网链接格式不正确';
+                color = '#f59e0b';
+            } else {
+                siteInfo = '⚠ 不支持的网站';
+                color = '#ef4444';
+            }
+            
+            detectedSite.textContent = siteInfo;
+            detectedSite.style.color = color;
+            detectedSite.style.display = 'inline';
+        }
+        
+        // 解析URL
+        async function parseUrl() {
+            const url = document.getElementById('urlInput').value.trim();
+            
+            if (!url) {
+                alert('请输入网址');
+                return;
+            }
+            
+            // 验证URL格式
+            if (!url.includes('huaban.com') && !url.includes('51yuansu.com') && !url.includes('90sheji.com') && !url.includes('design006.com')) {
+                alert('❌ 不支持的网站\n\n仅支持：\n• 花瓣网（huaban.com）\n• 觅元素（51yuansu.com）\n• 90设计（90sheji.com）\n• 享设计（design006.com）');
+                return;
+            }
+            
+            showLoading(true);
+            hideResult();
+            
+            try {
+                // 创建一个带超时的fetch请求（45秒超时，匹配服务器延长的等待时间）
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 45000);
+                
+                const res = await fetch(`${serverUrl}/api/parse`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeout);
+                
+                // 检查HTTP状态码
+                if (res.status === 429) {
+                    // 配额已用完
+                    const data = await res.json();
+                    alert('❌ ' + (data.message || '今日下载次数已用完，请明天再试'));
+                    await updateDownloadQuota(); // 更新显示
+                    showLoading(false);
+                    return;
+                }
+                
+                const data = await res.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // 更新下载配额显示
+                if (data.downloadInfo) {
+                    console.log('📊 下载配额信息:', data.downloadInfo);
+                    
+                    // 显示配额提示
+                    if (data.downloadInfo.message) {
+                        console.log('💡 配额提示:', data.downloadInfo.message);
+                    }
+                    
+                    await updateDownloadQuota();
+                }
+                
+                showResult(data.images || data.files || []);
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    alert('解析超时，请重试');
+                } else {
+                    alert('解析失败：' + error.message);
+                }
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // 显示加载状态
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            if (show) {
+                loading.classList.add('show');
+            } else {
+                loading.classList.remove('show');
+            }
+        }
+        
+        // 显示结果
+        function showResult(items) {
+            const result = document.getElementById('result');
+            const list = document.getElementById('downloadList');
+            
+            list.innerHTML = '';
+            
+            if (items.length === 0) {
+                list.innerHTML = '<li style="padding: 10px; text-align: center; color: #999;">未找到内容</li>';
+            } else {
+                items.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'download-item';
+                    
+                    // 构建标题，显示格式和大小
+                    let title = item.title || `文件 ${index + 1}`;
+                    
+                    // 添加格式标签
+                    let formatBadge = '';
+                    if (item.format) {
+                        const formatColors = {
+                            'PNG': '#4CAF50',
+                            'JPG': '#2196F3',
+                            'JPEG': '#2196F3',
+                            'GIF': '#FF9800',
+                            'PSD': '#9C27B0',
+                            'EPS': '#E91E63',
+                            'AI': '#FF5722',
+                            'SVG': '#00BCD4',
+                            'PDF': '#F44336',
+                            'ZIP': '#607D8B',
+                            'RAR': '#795548',
+                            'CDR': '#00A651',
+                            '3D': '#3F51B5',
+                            'SOURCE': '#607D8B'
+                        };
+                        const color = formatColors[item.format] || '#999';
+                        formatBadge = `<span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 3px; font-size: 11px; margin-left: 8px;">${item.format}</span>`;
+                    }
+                    
+                    // 添加网站标识
+                    let siteBadge = '';
+                    if (item.site) {
+                    const siteColors = {
+                        '花瓣网': '#ee584a',
+                        '觅元素': '#8b5cf6',
+                        '90设计': '#f97316',
+                        '享设计': '#eab308'
+                    };
+                        const color = siteColors[item.site] || '#666';
+                        siteBadge = `<span style="background: ${color}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px;">${item.site}</span>`;
+                    }
+                    
+                    // 添加大小信息
+                    let sizeInfo = '';
+                    if (item.size) {
+                        sizeInfo = `<span style="color: #666; font-size: 12px; margin-left: 8px;">${item.size}</span>`;
+                    }
+                    
+                    // 添加尺寸信息
+                    let dimensionInfo = '';
+                    if (item.width && item.height) {
+                        dimensionInfo = `<span style="color: #666; font-size: 12px; margin-left: 8px;">${item.width}×${item.height}</span>`;
+                    }
+                    
+                    // 使用 item.title 作为下载文件名（确保统一）
+                    const downloadFileName = item.title || `文件${index + 1}.${item.format ? item.format.toLowerCase() : 'file'}`;
+                    
+                    // 安全获取URL（兼容 url 和 downloadUrl 字段）
+                    const itemUrl = item.url || item.downloadUrl || '';
+                    
+                    // 构建下载URL
+                    const finalDownloadUrl = item.realUrl ? itemUrl : `${serverUrl}/api/download?url=${encodeURIComponent(itemUrl)}&filename=${encodeURIComponent(downloadFileName)}`;
+                    
+                    // 安全的字符串转义函数
+                    const escapeHtml = (str) => (str || '').replace(/"/g, '&quot;');
+                    const escapeJs = (str) => (str || '').replace(/'/g, "\\'");
+                    
+                    li.innerHTML = `
+                        <div style="flex: 1;">
+                            <div style="margin-bottom: 5px;">
+                                <span>${index + 1}. ${title}</span>
+                                ${siteBadge}
+                                ${formatBadge}
+                                ${sizeInfo}
+                                ${dimensionInfo}
+                                ${item.realUrl ? '<span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 10px; margin-left: 8px;">直链</span>' : ''}
+                            </div>
+                            <div style="font-size: 11px; color: #666; word-break: break-all;">
+                                <a href="${finalDownloadUrl}" target="_blank" style="color: #667eea; text-decoration: none;" 
+                                   onmouseover="this.style.textDecoration='underline'" 
+                                   onmouseout="this.style.textDecoration='none'"
+                                   title="点击直接下载">
+                                    🔗 ${finalDownloadUrl.substring(0, 80)}${finalDownloadUrl.length > 80 ? '...' : ''}
+                                </a>
+                                <button 
+                                    onclick="navigator.clipboard.writeText('${escapeJs(finalDownloadUrl)}').then(() => alert('✅ 链接已复制到剪贴板！'))"
+                                    style="background: transparent; border: none; color: #667eea; cursor: pointer; margin-left: 8px; font-size: 11px;"
+                                    title="复制链接"
+                                >
+                                    📋 复制
+                                </button>
+                            </div>
+                        </div>
+                        <button 
+                            class="download-btn" 
+                            data-url="${escapeHtml(itemUrl)}" 
+                            data-filename="${escapeHtml(downloadFileName)}"
+                            data-realurl="${item.realUrl || false}"
+                            style="background: #667eea; color: white; padding: 6px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; flex-shrink: 0;"
+                            onmouseover="this.style.background='#5568d3'" 
+                            onmouseout="this.style.background='#667eea'"
+                        >
+                            📥 下载
+                        </button>
+                    `;
+                    
+                    // 添加点击事件
+                    const downloadBtn = li.querySelector('.download-btn');
+                    downloadBtn.addEventListener('click', function() {
+                        const isRealUrl = this.getAttribute('data-realurl') === 'true';
+                        downloadFile(this.getAttribute('data-url'), this.getAttribute('data-filename'), isRealUrl);
+                    });
+                    
+                    list.appendChild(li);
+                });
+            }
+            
+            result.classList.add('show');
+        }
+        
+        // 隐藏结果
+        function hideResult() {
+            document.getElementById('result').classList.remove('show');
+        }
+        
+        // 下载文件
+        async function downloadFile(fileUrl, filename, isRealUrl) {
+            try {
+                console.log('📥 开始下载');
+                console.log('  文件名:', filename);
+                console.log('  原始URL:', fileUrl);
+                console.log('  是否真实URL:', isRealUrl);
+                
+                let downloadUrl;
+                
+                if (isRealUrl) {
+                    // 🎉 直接使用花瓣网返回的真实下载URL
+                    downloadUrl = fileUrl;
+                    console.log('✅ 使用真实下载URL（不走代理）');
+                } else {
+                    // 使用服务器代理
+                    downloadUrl = `${serverUrl}/api/download?url=${encodeURIComponent(fileUrl)}&filename=${encodeURIComponent(filename)}`;
+                    console.log('⚡ 使用服务器代理下载');
+                }
+                
+                console.log('🔗 最终下载链接:', downloadUrl);
+                
+                // 🎯 使用uTools API或系统默认浏览器打开下载链接
+                if (typeof utools !== 'undefined' && utools.shellOpenExternal) {
+                    // 如果在uTools环境中，使用uTools API打开外部链接
+                    console.log('✅ 使用uTools打开外部链接');
+                    utools.shellOpenExternal(downloadUrl);
+                } else if (typeof require !== 'undefined') {
+                    // 如果是Electron环境，使用shell
+                    try {
+                        const { shell } = require('electron');
+                        console.log('✅ 使用Electron shell打开链接');
+                        shell.openExternal(downloadUrl);
+                    } catch (e) {
+                        // 降级到window.open
+                        console.log('⚡ 降级使用window.open');
+                        window.open(downloadUrl, '_blank');
+                    }
+                } else {
+                    // 普通浏览器环境，直接打开
+                    console.log('✅ 使用window.open打开链接');
+                    window.open(downloadUrl, '_blank');
+                }
+                
+                console.log('✅ 下载已触发（在浏览器中打开）');
+                
+            } catch (error) {
+                console.error('❌ 下载失败:', error);
+                alert('下载失败：' + error.message);
+            }
+        }
+        
+        // ==================== 90设计相关函数 ====================
+        
+        // 90设计登录相关变量
+        let ninetyShejieLoginPollInterval = null;
+        let ninetyShejieLoginInProgress = false;
+        let ninetyShejieLoginSuccessShown = false;
+        
+        // 更新90设计登录UI
+        function updateNinetyShejieLoginUI(isLoggedIn) {
+            const loggedInSection = document.getElementById('ninetyShejieLoggedInSection');
+            const loginFormSection = document.getElementById('ninetyShejieLoginFormSection');
+            
+            console.log('🎯 更新90设计UI状态:', isLoggedIn ? '已登录' : '未登录');
+            
+            if (isLoggedIn) {
+                loggedInSection.style.display = 'block';
+                loginFormSection.style.display = 'none';
+            } else {
+                loggedInSection.style.display = 'none';
+                loginFormSection.style.display = 'block';
+            }
+        }
+        
+        // 90设计QQ扫码登录
+        async function ninetyShejieQrLogin() {
+            const btn = document.getElementById('ninetyShejieQrLoginBtn');
+            const qrSection = document.getElementById('ninetyShejieQrCodeSection');
+            const qrImg = document.getElementById('ninetyShejieQrCodeImg');
+            const qrStatus = document.getElementById('ninetyShejieQrCodeStatus');
+            
+            // 清除可能存在的旧定时器
+            if (ninetyShejieLoginPollInterval) {
+                console.log('⚠️  清除旧的轮询定时器');
+                clearInterval(ninetyShejieLoginPollInterval);
+                ninetyShejieLoginPollInterval = null;
+            }
+            
+            // 重置标志
+            ninetyShejieLoginInProgress = true;
+            ninetyShejieLoginSuccessShown = false;
+            
+            btn.disabled = true;
+            btn.textContent = '🔄 正在生成二维码...';
+            
+            try {
+                console.log('🔄 开始调用90设计登录API...');
+                console.log('📡 请求URL:', `${serverUrl}/api/90sheji/login`);
+                
+                // 调用API获取二维码
+                const res = await fetch(`${serverUrl}/api/90sheji/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                console.log('📥 收到服务器响应，状态码:', res.status);
+                
+                const data = await res.json();
+                console.log('📦 服务器返回数据:', data);
+                
+                if (data.success && data.waiting && data.qrcode) {
+                    console.log('✅ 数据验证通过，开始显示二维码');
+                    console.log('📊 二维码数据长度:', data.qrcode.length);
+                    
+                    // 显示二维码
+                    qrImg.src = data.qrcode;
+                    qrSection.style.display = 'block';
+                    qrStatus.innerHTML = '⏳ 等待扫码...（最多3分钟）';
+                    btn.textContent = '⏳ 扫码中...';
+                    
+                    console.log('✅ 90设计二维码已显示');
+                    
+                    // 🎯 等待3秒后再开始轮询，避免立即检测到旧的登录状态
+                    console.log('⏳ 等待3秒后开始轮询检查登录状态...');
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    // 开始轮询检查登录状态
+                    let elapsedSeconds = 0;
+                    console.log('🔄 开始轮询检查登录状态（每2秒一次）');
+                    ninetyShejieLoginPollInterval = setInterval(async () => {
+                        elapsedSeconds += 2;
+                        
+                        // 更新倒计时显示
+                        const remainingSeconds = 180 - elapsedSeconds;
+                        if (remainingSeconds > 0) {
+                            qrStatus.innerHTML = `⏳ 等待扫码...（剩余 ${remainingSeconds} 秒）`;
+                        }
+                        
+                        // 检查登录状态
+                        try {
+                            console.log(`🔍 [${elapsedSeconds}s] 开始检查90设计登录状态...`);
+                            const statusRes = await fetch(`${serverUrl}/api/90sheji/status`);
+                            
+                            if (!statusRes.ok) {
+                                console.error('❌ 状态检查请求失败，HTTP状态:', statusRes.status);
+                                return;
+                            }
+                            
+                            const statusData = await statusRes.json();
+                            
+                            console.log(`📊 [${elapsedSeconds}s] 90设计状态响应:`, {
+                                isLoggedIn: statusData.isLoggedIn,
+                                message: statusData.message,
+                                site: statusData.site,
+                                fullData: statusData
+                            });
+                            
+                            if (statusData.isLoggedIn) {
+                                // 登录成功
+                                console.log('✅ 检测到 isLoggedIn = true');
+                                
+                                if (!ninetyShejieLoginSuccessShown) {
+                                    console.log('🎉 90设计登录成功！开始执行登录成功处理...');
+                                    ninetyShejieLoginSuccessShown = true;
+                                    ninetyShejieLoginInProgress = false;
+                                    
+                                    // 清除定时器
+                                    if (ninetyShejieLoginPollInterval) {
+                                        console.log('🔄 清除轮询定时器');
+                                        clearInterval(ninetyShejieLoginPollInterval);
+                                        ninetyShejieLoginPollInterval = null;
+                                    }
+                                    
+                                    // 隐藏二维码
+                                    qrSection.style.display = 'none';
+                                    console.log('✅ 已隐藏二维码区域');
+                                    
+                                    // 恢复按钮
+                                    btn.disabled = false;
+                                    btn.textContent = '📱 开始QQ扫码登录';
+                                    console.log('✅ 已恢复登录按钮状态');
+                                    
+                                    // 更新UI
+                                    updateNinetyShejieLoginUI(true);
+                                    console.log('✅ 已更新UI为已登录状态');
+                                    
+                                    // 更新配额卡片UI
+                                    updateQuotaCardUI('ninetyshejie', true);
+                                    
+                                    // 显示提示
+                                    alert('✅ 90设计登录成功！\n\n团队成员现在可以下载90设计素材了。');
+                                    console.log('✅ 登录成功处理完成');
+                                } else {
+                                    console.log('⚠️  登录成功提示已显示过，跳过重复处理');
+                                }
+                            } else {
+                                console.log(`⏳ [${elapsedSeconds}s] 尚未登录，继续等待...`);
+                            }
+                        } catch (error) {
+                            console.error('❌ 检查90设计登录状态失败:', error);
+                            console.error('📊 错误详情:', {
+                                message: error.message,
+                                stack: error.stack
+                            });
+                        }
+                        
+                        // 超时检查（3分钟）
+                        if (elapsedSeconds >= 180) {
+                            if (ninetyShejieLoginPollInterval) {
+                                clearInterval(ninetyShejieLoginPollInterval);
+                                ninetyShejieLoginPollInterval = null;
+                            }
+                            ninetyShejieLoginInProgress = false;
+                            
+                            qrSection.style.display = 'none';
+                            btn.disabled = false;
+                            btn.textContent = '📱 开始QQ扫码登录';
+                            alert('⏱️ 登录超时\n\n请重新点击登录按钮获取新二维码');
+                        }
+                    }, 2000);
+                    
+                } else if (data.error) {
+                    console.error('❌ 服务器返回错误:', data.error);
+                    throw new Error(data.error);
+                } else {
+                    console.error('❌ 服务器返回数据格式不正确:', {
+                        hasSuccess: !!data.success,
+                        hasWaiting: !!data.waiting,
+                        hasQrcode: !!data.qrcode,
+                        data: data
+                    });
+                    throw new Error('获取二维码失败：服务器返回数据不完整');
+                }
+                
+            } catch (error) {
+                console.error('❌ 90设计登录失败:', error);
+                console.error('📊 错误详情:', {
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                alert('❌ 登录失败：' + error.message + '\n\n请查看控制台(F12)获取详细错误信息');
+                qrSection.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = '📱 开始QQ扫码登录';
+                ninetyShejieLoginInProgress = false;
+            }
+        }
+        
+        // 90设计退出登录
+        async function ninetyShejieLogout() {
+            if (!confirm('确定要退出90设计登录吗？\n\n退出后团队成员将无法下载90设计素材。')) {
+                return;
+            }
+            
+            // 清除可能存在的登录轮询定时器和标志
+            if (ninetyShejieLoginPollInterval) {
+                clearInterval(ninetyShejieLoginPollInterval);
+                ninetyShejieLoginPollInterval = null;
+            }
+            ninetyShejieLoginInProgress = false;
+            ninetyShejieLoginSuccessShown = false;
+            
+            const btn = document.getElementById('ninetyShejieLogoutBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '🔄 正在退出...';
+            
+            try {
+                const res = await fetch(`${serverUrl}/api/90sheji/logout`, {
+                    method: 'POST'
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ 已退出90设计登录\n\n' + data.message);
+                    updateNinetyShejieLoginUI(false);
+                    updateQuotaCardUI('ninetyshejie', false);
+                } else {
+                    throw new Error(data.error || '退出失败');
+                }
+                
+            } catch (error) {
+                alert('❌ 退出失败：' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // 检查90设计登录状态
+        async function checkNinetyShejieStatus() {
+            try {
+                console.log('🔍 手动检查90设计登录状态...');
+                const res = await fetch(`${serverUrl}/api/90sheji/status`);
+                const data = await res.json();
+                
+                console.log('📊 90设计状态检查结果:', data);
+                
+                if (data.isLoggedIn) {
+                    // 🎉 检测到已登录，执行完整的登录成功处理
+                    console.log('✅ 检测到90设计已登录！');
+                    
+                    // 清除轮询定时器（如果还在运行）
+                    if (ninetyShejieLoginPollInterval) {
+                        console.log('🔄 清除现有的登录轮询定时器');
+                        clearInterval(ninetyShejieLoginPollInterval);
+                        ninetyShejieLoginPollInterval = null;
+                    }
+                    
+                    // 重置登录标志
+                    ninetyShejieLoginInProgress = false;
+                    ninetyShejieLoginSuccessShown = true; // 标记为已显示，避免重复提示
+                    
+                    // 隐藏二维码区域
+                    const qrSection = document.getElementById('ninetyShejieQrCodeSection');
+                    if (qrSection && qrSection.style.display !== 'none') {
+                        qrSection.style.display = 'none';
+                        console.log('✅ 已隐藏二维码区域');
+                    }
+                    
+                    // 恢复登录按钮状态
+                    const loginBtn = document.getElementById('ninetyShejieQrLoginBtn');
+                    if (loginBtn) {
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = '📱 开始QQ扫码登录';
+                    }
+                    
+                    // 更新UI为已登录状态
+                    updateNinetyShejieLoginUI(true);
+                    
+                    // 更新配额卡片UI
+                    updateQuotaCardUI('ninetyshejie', true);
+                    
+                    // 显示登录成功提示
+                    alert('✅ 90设计已登录！\n\n' + (data.message || '团队成员现在可以下载90设计素材了。'));
+                } else {
+                    // 未登录
+                    console.log('❌ 90设计未登录');
+                    updateNinetyShejieLoginUI(false);
+                    updateQuotaCardUI('ninetyshejie', false);
+                    alert('❌ 90设计未登录\n\n' + (data.message || '请先完成登录'));
+                }
+            } catch (error) {
+                console.error('❌ 检查90设计状态失败:', error);
+                alert('❌ 检查状态失败：' + error.message);
+            }
+        }
+        
+        // ==================== 享设计相关函数 ====================
+        
+        // 享设计登录相关变量
+        let design006LoginPollInterval = null;
+        let design006LoginInProgress = false;
+        let design006LoginSuccessShown = false;
+        
+        // 更新享设计登录UI
+        function updateDesign006LoginUI(isLoggedIn) {
+            const loggedInSection = document.getElementById('design006LoggedInSection');
+            const loginFormSection = document.getElementById('design006LoginFormSection');
+            
+            console.log('✨ 更新享设计UI状态:', isLoggedIn ? '已登录' : '未登录');
+            
+            if (isLoggedIn) {
+                loggedInSection.style.display = 'block';
+                loginFormSection.style.display = 'none';
+            } else {
+                loggedInSection.style.display = 'none';
+                loginFormSection.style.display = 'block';
+            }
+        }
+        
+        // 享设计QQ扫码登录
+        async function design006QrLogin() {
+            const btn = document.getElementById('design006QrLoginBtn');
+            const qrSection = document.getElementById('design006QrCodeSection');
+            const qrImg = document.getElementById('design006QrCodeImg');
+            const qrStatus = document.getElementById('design006QrCodeStatus');
+            
+            // 清除可能存在的旧定时器
+            if (design006LoginPollInterval) {
+                console.log('⚠️  清除旧的轮询定时器');
+                clearInterval(design006LoginPollInterval);
+                design006LoginPollInterval = null;
+            }
+            
+            // 重置标志
+            design006LoginInProgress = true;
+            design006LoginSuccessShown = false;
+            
+            btn.disabled = true;
+            btn.textContent = '🔄 正在生成二维码...';
+            
+            try {
+                console.log('🔄 开始调用享设计登录API...');
+                console.log('📡 请求URL:', `${serverUrl}/api/design006/login`);
+                
+                // 调用API获取二维码
+                const res = await fetch(`${serverUrl}/api/design006/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                
+                console.log('📥 收到服务器响应，状态码:', res.status);
+                
+                const data = await res.json();
+                console.log('📦 服务器返回数据:', data);
+                
+                if (data.success && data.waiting && data.qrcode) {
+                    console.log('✅ 数据验证通过，开始显示二维码');
+                    console.log('📊 二维码数据长度:', data.qrcode.length);
+                    
+                    // 显示二维码
+                    qrImg.src = data.qrcode;
+                    qrSection.style.display = 'block';
+                    qrStatus.innerHTML = '⏳ 等待扫码...（最多3分钟）';
+                    btn.textContent = '⏳ 扫码中...';
+                    
+                    console.log('✅ 享设计二维码已显示');
+                    
+                    // 等待3秒后再开始轮询
+                    console.log('⏳ 等待3秒后开始轮询检查登录状态...');
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    
+                    // 开始轮询检查登录状态
+                    let elapsedSeconds = 0;
+                    console.log('🔄 开始轮询检查登录状态（每2秒一次）');
+                    design006LoginPollInterval = setInterval(async () => {
+                        elapsedSeconds += 2;
+                        
+                        // 更新倒计时显示
+                        const remainingSeconds = 180 - elapsedSeconds;
+                        if (remainingSeconds > 0) {
+                            qrStatus.innerHTML = `⏳ 等待扫码...（剩余 ${remainingSeconds} 秒）`;
+                        }
+                        
+                        // 检查登录状态
+                        try {
+                            console.log(`🔍 [${elapsedSeconds}s] 开始检查享设计登录状态...`);
+                            const statusRes = await fetch(`${serverUrl}/api/design006/status`);
+                            
+                            if (!statusRes.ok) {
+                                console.error('❌ 状态检查请求失败，HTTP状态:', statusRes.status);
+                                return;
+                            }
+                            
+                            const statusData = await statusRes.json();
+                            
+                            console.log(`📊 [${elapsedSeconds}s] 享设计状态响应:`, {
+                                isLoggedIn: statusData.isLoggedIn,
+                                message: statusData.message,
+                                site: statusData.site,
+                                fullData: statusData
+                            });
+                            
+                            if (statusData.isLoggedIn) {
+                                // 登录成功
+                                console.log('✅ 检测到 isLoggedIn = true');
+                                
+                                if (!design006LoginSuccessShown) {
+                                    console.log('🎉 享设计登录成功！开始执行登录成功处理...');
+                                    design006LoginSuccessShown = true;
+                                    design006LoginInProgress = false;
+                                    
+                                    // 清除定时器
+                                    if (design006LoginPollInterval) {
+                                        console.log('🔄 清除轮询定时器');
+                                        clearInterval(design006LoginPollInterval);
+                                        design006LoginPollInterval = null;
+                                    }
+                                    
+                                    // 隐藏二维码
+                                    qrSection.style.display = 'none';
+                                    console.log('✅ 已隐藏二维码区域');
+                                    
+                                    // 恢复按钮
+                                    btn.disabled = false;
+                                    btn.textContent = '📱 开始QQ扫码登录';
+                                    console.log('✅ 已恢复登录按钮状态');
+                                    
+                                    // 更新UI
+                                    updateDesign006LoginUI(true);
+                                    console.log('✅ 已更新UI为已登录状态');
+                                    
+                                    // 更新配额卡片UI
+                                    updateQuotaCardUI('design006', true);
+                                    
+                                    // 显示提示
+                                    alert('✅ 享设计登录成功！\n\n团队成员现在可以下载享设计素材了。');
+                                    console.log('✅ 登录成功处理完成');
+                                } else {
+                                    console.log('⚠️  登录成功提示已显示过，跳过重复处理');
+                                }
+                            } else {
+                                console.log(`⏳ [${elapsedSeconds}s] 尚未登录，继续等待...`);
+                            }
+                        } catch (error) {
+                            console.error('❌ 检查享设计登录状态失败:', error);
+                            console.error('📊 错误详情:', {
+                                message: error.message,
+                                stack: error.stack
+                            });
+                        }
+                        
+                        // 超时检查（3分钟）
+                        if (elapsedSeconds >= 180) {
+                            if (design006LoginPollInterval) {
+                                clearInterval(design006LoginPollInterval);
+                                design006LoginPollInterval = null;
+                            }
+                            design006LoginInProgress = false;
+                            
+                            qrSection.style.display = 'none';
+                            btn.disabled = false;
+                            btn.textContent = '📱 开始QQ扫码登录';
+                            alert('⏱️ 登录超时\n\n请重新点击登录按钮获取新二维码');
+                        }
+                    }, 2000);
+                    
+                } else if (data.error) {
+                    console.error('❌ 服务器返回错误:', data.error);
+                    throw new Error(data.error);
+                } else {
+                    console.error('❌ 服务器返回数据格式不正确:', {
+                        hasSuccess: !!data.success,
+                        hasWaiting: !!data.waiting,
+                        hasQrcode: !!data.qrcode,
+                        data: data
+                    });
+                    throw new Error('获取二维码失败：服务器返回数据不完整');
+                }
+                
+            } catch (error) {
+                console.error('❌ 享设计登录失败:', error);
+                console.error('📊 错误详情:', {
+                    message: error.message,
+                    stack: error.stack
+                });
+                
+                alert('❌ 登录失败：' + error.message + '\n\n请查看控制台(F12)获取详细错误信息');
+                qrSection.style.display = 'none';
+                btn.disabled = false;
+                btn.textContent = '📱 开始QQ扫码登录';
+                design006LoginInProgress = false;
+            }
+        }
+        
+        // 享设计退出登录
+        async function design006Logout() {
+            if (!confirm('确定要退出享设计登录吗？\n\n退出后团队成员将无法下载享设计素材。')) {
+                return;
+            }
+            
+            // 清除可能存在的登录轮询定时器和标志
+            if (design006LoginPollInterval) {
+                clearInterval(design006LoginPollInterval);
+                design006LoginPollInterval = null;
+            }
+            design006LoginInProgress = false;
+            design006LoginSuccessShown = false;
+            
+            const btn = document.getElementById('design006LogoutBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '🔄 正在退出...';
+            
+            try {
+                const res = await fetch(`${serverUrl}/api/design006/logout`, {
+                    method: 'POST'
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ 已退出享设计登录\n\n' + data.message);
+                    updateDesign006LoginUI(false);
+                    updateQuotaCardUI('design006', false);
+                } else {
+                    throw new Error(data.error || '退出失败');
+                }
+                
+            } catch (error) {
+                alert('❌ 退出失败：' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        // 检查享设计登录状态
+        async function checkDesign006Status() {
+            try {
+                console.log('🔍 手动检查享设计登录状态...');
+                const res = await fetch(`${serverUrl}/api/design006/status`);
+                const data = await res.json();
+                
+                console.log('📊 享设计状态检查结果:', data);
+                
+                if (data.isLoggedIn) {
+                    console.log('✅ 检测到享设计已登录！');
+                    
+                    // 清除轮询定时器
+                    if (design006LoginPollInterval) {
+                        console.log('🔄 清除现有的登录轮询定时器');
+                        clearInterval(design006LoginPollInterval);
+                        design006LoginPollInterval = null;
+                    }
+                    
+                    // 重置登录标志
+                    design006LoginInProgress = false;
+                    design006LoginSuccessShown = true;
+                    
+                    // 隐藏二维码区域
+                    const qrSection = document.getElementById('design006QrCodeSection');
+                    if (qrSection && qrSection.style.display !== 'none') {
+                        qrSection.style.display = 'none';
+                        console.log('✅ 已隐藏二维码区域');
+                    }
+                    
+                    // 恢复登录按钮状态
+                    const loginBtn = document.getElementById('design006QrLoginBtn');
+                    if (loginBtn) {
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = '📱 开始QQ扫码登录';
+                    }
+                    
+                    // 更新UI为已登录状态
+                    updateDesign006LoginUI(true);
+                    
+                    // 更新配额卡片UI
+                    updateQuotaCardUI('design006', true);
+                    
+                    // 显示登录成功提示
+                    alert('✅ 享设计已登录！\n\n' + (data.message || '团队成员现在可以下载享设计素材了。'));
+                } else {
+                    // 未登录
+                    console.log('❌ 享设计未登录');
+                    updateDesign006LoginUI(false);
+                    updateQuotaCardUI('design006', false);
+                    alert('❌ 享设计未登录\n\n' + (data.message || '请先完成登录'));
+                }
+            } catch (error) {
+                console.error('❌ 检查享设计状态失败:', error);
+                alert('❌ 检查状态失败：' + error.message);
+            }
+        }
+        
+        // 自动检测所有网站的登录状态（静默模式，不显示alert）
+        async function autoCheckAllLoginStatus() {
+            console.log('🔄 自动检测所有网站登录状态...');
+            
+            // 检测花瓣网登录状态
+            try {
+                const huabanRes = await fetch(`${serverUrl}/api/status`);
+                const huabanData = await huabanRes.json();
+                updateQuotaCardUI('huaban', huabanData.isLoggedIn);
+            } catch (error) {
+                console.error('❌ 检查花瓣网状态失败:', error);
+                updateQuotaCardUI('huaban', false);
+            }
+            
+            // 检测觅元素登录状态
+            try {
+                const yuansuRes = await fetch(`${serverUrl}/api/yuansu/status`);
+                const yuansuData = await yuansuRes.json();
+                updateQuotaCardUI('yuansu', yuansuData.isLoggedIn);
+                // 同步更新管理员界面的登录状态
+                updateYuansuLoginUI(yuansuData.isLoggedIn);
+            } catch (error) {
+                console.error('❌ 检查觅元素状态失败:', error);
+                updateQuotaCardUI('yuansu', false);
+                updateYuansuLoginUI(false);
+            }
+            
+            // 检测90设计登录状态
+            try {
+                const ninetyShejieRes = await fetch(`${serverUrl}/api/90sheji/status`);
+                const ninetyShejieData = await ninetyShejieRes.json();
+                updateQuotaCardUI('ninetyshejie', ninetyShejieData.isLoggedIn);
+                // 同步更新管理员界面的登录状态
+                updateNinetyShejieLoginUI(ninetyShejieData.isLoggedIn);
+            } catch (error) {
+                console.error('❌ 检查90设计状态失败:', error);
+                updateQuotaCardUI('ninetyshejie', false);
+                updateNinetyShejieLoginUI(false);
+            }
+            
+            // 检测享设计登录状态
+            try {
+                const design006Res = await fetch(`${serverUrl}/api/design006/status`);
+                const design006Data = await design006Res.json();
+                updateQuotaCardUI('design006', design006Data.isLoggedIn);
+                // 同步更新管理员界面的登录状态
+                updateDesign006LoginUI(design006Data.isLoggedIn);
+                console.log('✅ 享设计登录状态已更新:', design006Data.isLoggedIn ? '已登录' : '未登录');
+            } catch (error) {
+                console.error('❌ 检查享设计状态失败:', error);
+                updateQuotaCardUI('design006', false);
+                updateDesign006LoginUI(false);
+            }
+            
+            console.log('✅ 登录状态检测完成');
+        }
+        
+        // 更新配额卡片UI
+        function updateQuotaCardUI(site, isLoggedIn) {
+            const statusElement = document.getElementById(`${site}Status`);
+            const loggedInContent = document.getElementById(`${site}LoggedInContent`);
+            const notLoggedInContent = document.getElementById(`${site}NotLoggedInContent`);
+            
+            // 获取网站名称
+            const siteNames = {
+                'huaban': '花瓣网',
+                'yuansu': '觅元素',
+                'ninetyshejie': '90设计',
+                'design006': '享设计'
+            };
+            const siteName = siteNames[site] || site;
+            
+            if (isLoggedIn) {
+                // 已登录
+                if (statusElement) {
+                    // 🎯 所有站点都显示"已登录"，使用各自的专属颜色
+                    statusElement.textContent = '已登录';
+                    statusElement.className = `quota-status ${site}-logged`;
+                }
+                if (loggedInContent) loggedInContent.style.display = 'block';
+                if (notLoggedInContent) notLoggedInContent.style.display = 'none';
+                console.log(`✅ ${siteName} 已登录`);
+            } else {
+                // 未登录
+                if (statusElement) {
+                    statusElement.textContent = '未登录';
+                    statusElement.className = 'quota-status limited';
+                }
+                if (loggedInContent) loggedInContent.style.display = 'none';
+                if (notLoggedInContent) notLoggedInContent.style.display = 'block';
+                console.log(`❌ ${siteName} 未登录`);
+            }
+        }
+        
+        // 手动刷新连接和登录状态
+        async function manualRefresh() {
+            const btn = document.getElementById('refreshBtn');
+            
+            // 添加刷新动画
+            btn.classList.add('refreshing');
+            btn.disabled = true;
+            
+            console.log('🔄 手动刷新所有状态...');
+            
+            try {
+                // 检查服务器连接
+                await checkConnection();
+                
+                // 检查所有网站登录状态
+                await autoCheckAllLoginStatus();
+                
+                console.log('✅ 刷新完成');
+            } catch (error) {
+                console.error('❌ 刷新失败:', error);
+            } finally {
+                // 移除刷新动画
+                setTimeout(() => {
+                    btn.classList.remove('refreshing');
+                    btn.disabled = false;
+                }, 500);
+            }
+        }
+        
+        // 页面加载时立即检查连接和登录状态
+        checkConnection();
+        autoCheckAllLoginStatus();
+        
+        // 定时检查连接（每10分钟）
+        setInterval(checkConnection, 600000); // 600000ms = 10分钟
+        
+        // 定时检查所有网站登录状态（每1分钟）
+        setInterval(autoCheckAllLoginStatus, 60000); // 60000ms = 1分钟
+        
+        // ==================== 暗黑模式切换功能 ====================
+        
+        // 切换暗黑模式
+        function toggleDarkMode() {
+            const body = document.body;
+            const slider = document.getElementById('themeSlider');
+            const isDark = body.classList.toggle('dark-mode');
+            
+            // 更新按钮图标和标题
+            if (isDark) {
+                slider.textContent = '🌙';
+                document.getElementById('themeToggle').title = '切换明亮模式';
+                localStorage.setItem('darkMode', 'enabled');
+            } else {
+                slider.textContent = '☀️';
+                document.getElementById('themeToggle').title = '切换暗黑模式';
+                localStorage.setItem('darkMode', 'disabled');
+            }
+        }
+        
+        // 初始化暗黑模式
+        function initDarkMode() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'enabled') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeSlider').textContent = '🌙';
+                document.getElementById('themeToggle').title = '切换明亮模式';
+            }
+        }
+        
+        // 页面加载时初始化暗黑模式
+        initDarkMode();
+    </script>
+</body>
+</html>
+

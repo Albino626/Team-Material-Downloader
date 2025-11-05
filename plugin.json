@@ -1,0 +1,24 @@
+{
+  "pluginName": "团队素材下载工具",
+  "version": "1.0.0",
+  "description": "团队素材下载工具 - 支持花瓣网、觅元素、90设计、享设计四大设计平台",
+  "author": "Open Source Contributors",
+  "homepage": "",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "main": "index.html",
+  "features": [
+    {
+      "code": "素材下载",
+      "explain": "素材下载工具",
+      "cmds": [
+        "素材下载",
+        "素材",
+        "下载",
+        "material",
+        "download"
+      ]
+    }
+  ]
+}
+
